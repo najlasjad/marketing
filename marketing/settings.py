@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'marketing_app',  # Ensure your app is included here
 ]
 
 MIDDLEWARE = [
