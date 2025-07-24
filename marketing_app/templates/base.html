@@ -1,477 +1,442 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>University - Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-      .progress-bar {
-        transition: width 0.3s ease;
-      }
-      .dropdown-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-      }
-      .dropdown-content.active {
-        max-height: 200px;
-      }
-      .mobile-sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-      }
-      .mobile-sidebar.active {
-        transform: translateX(0);
-      }
-      .overlay {
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-      }
-      .overlay.active {
-        opacity: 1;
-        visibility: visible;
-      }
-    </style>
-  </head>
-  <body class="bg-gray-100">
-    <div class="flex h-screen">
-      <!-- Mobile Burger Button -->
-      <div class="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          id="mobileMenuBtn"
-          class="bg-gray-800 text-white p-2 rounded-lg shadow-lg"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            ></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Mobile Overlay -->
-      <div
-        id="mobileOverlay"
-        class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 overlay"
-      ></div>
-
-      <!-- Sidebar -->
-      <div
-        id="sidebar"
-        class="w-64 bg-gray-800 text-white h-screen fixed lg:relative z-50 mobile-sidebar lg:transform-none"
-      >
-        <!-- Close Button (Mobile Only) -->
-        <div class="lg:hidden absolute top-4 right-4">
-          <button id="closeMobileMenu" class="text-white p-1">
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Logo -->
-        <div class="p-4 border-b border-gray-700">
-          <div class="flex items-center space-x-2">
-            <div
-              class="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center"
-            >
-              <span class="text-white font-bold text-sm">P</span>
-            </div>
-            <span class="font-bold text-lg">POW</span>
-          </div>
-        </div>
-
-        <!-- Menu -->
-        <div class="p-4">
-          <div class="mb-6">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">
-              MAIN MENU
-            </h3>
-            <div
-              class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700"
-            >
-              <div class="flex items-center space-x-3">
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  ></path>
-                </svg>
-                <span>Dashboard</span>
-              </div>
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                ></path>
-              </svg>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">
-              SURFACE
-            </h3>
-            <div class="space-y-1">
-              <!-- Prediction with Dropdown -->
-              <div>
-                <div
-                  class="flex items-center justify-between p-3 rounded-lg cursor-pointer bg-purple-600 text-white"
-                  onclick="toggleDropdown('surfacePrediction')"
-                >
-                  <div class="flex items-center space-x-3">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                      ></path>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Marketing - Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+        <style>
+            .progress-bar {
+                transition: width 0.3s ease;
+            }
+            .dropdown-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            .dropdown-content.active {
+                max-height: 200px;
+            }
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+            .overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100">
+        <div class="flex h-screen">
+            <!-- Mobile Burger Button -->
+            <div class="lg:hidden fixed top-4 left-4 z-50">
+                <button
+                    id="mobileMenuBtn"
+                    class="bg-gray-800 text-white p-2 rounded-lg shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
-                    <span>Prediction</span>
-                  </div>
-                  <svg
-                    class="w-4 h-4 transform transition-transform"
-                    id="surfacePredictionIcon"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    ></path>
-                  </svg>
-                </div>
-                <!-- Dropdown Content -->
-                <div
-                  class="dropdown-content bg-gray-700 ml-8 mt-1 rounded-lg"
-                  id="surfacePredictionDropdown"
-                >
-                  <div class="py-2">
-                    <div
-                      class="px-4 py-2 text-gray-300 hover:bg-gray-600 cursor-pointer rounded"
-                    >
-                      NB_Validation
-                    </div>
-                    <div
-                      class="px-4 py-2 text-gray-300 hover:bg-gray-600 cursor-pointer rounded"
-                    >
-                      Station_Velo
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700"
-              >
-                <div class="flex items-center space-x-3">
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    ></path>
-                  </svg>
-                  <span>Visualization</span>
-                </div>
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  ></path>
-                </svg>
-              </div>
+                </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col lg:ml-0">
+            <!-- Mobile Overlay -->
+            <div
+                id="mobileOverlay"
+                class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 overlay"></div>
+
+            <!-- Sidebar -->
+            <div
+                id="sidebar"
+                class="w-64 bg-gray-800 text-white h-screen fixed lg:relative z-50 mobile-sidebar lg:transform-none">
+                <!-- Close Button (Mobile Only) -->
+                <div class="lg:hidden absolute top-4 right-4">
+                    <button id="closeMobileMenu" class="text-white p-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Logo -->
+                <div class="p-4 border-b border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-r rounded-lg flex items-center justify-center">
+                            <img
+                                src="{% static 'img/logo_president.png' %}"
+                                alt="logo"
+                                style="max-width: 50px"/>
+                        </div>
+                        <span class="font-bold text-lg">Marketing</span>
+                    </div>
+                </div>
+
+                <!-- Menu -->
+                <div class="p-4">
+                    <div class="mb-6">
+                        <h3 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">
+                            MAIN MENU
+                        </h3>
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <span>Dashboard</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="mb-6">
+                        <h3 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">
+                            ANALYSIS
+                        </h3>
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </svg>
+                            <span>Prediction</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700">
+                        <div class="flex items-center space-x-3">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-6">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z"/>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z"/>
+                            </svg>
+
+                            <span>Visualization</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <div class="mb-6">
+                    <h3 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">
+                        DATA
+                    </h3>
+                    <div
+                        class="flex items-center justify-between p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-gray-700">
+                        <div class="flex items-center space-x-3">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-6">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+                            </svg>
+
+                        </svg>
+                        <span>Dataset</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col lg:ml-0">
         <!-- Header -->
         <div class="bg-white shadow-sm border-b p-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <!-- Space for mobile burger button -->
-              <div class="w-10 lg:hidden"></div>
-              <div class="relative">
-                <svg
-                  class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  ></path>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search"
-                  class="pl-10 pr-4 py-2 bg-gray-100 rounded-lg w-48 sm:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <!-- Space for mobile burger button -->
+                    <div class="w-10 lg:hidden"></div>
+                    <div class="relative">
+                        <svg
+                            class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Search"
+                            class="pl-10 pr-4 py-2 bg-gray-100 rounded-lg w-48 sm:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500"/>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 text-gray-600">
+                    <button onclick="logout()" class="focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div class="flex items-center space-x-4 text-gray-600">
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 17h5l-5 5v-5z"
-                ></path>
-              </svg>
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                ></path>
-              </svg>
-            </div>
-          </div>
         </div>
 
         <!-- Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-4">
-          {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
         </main>
-      </div>
     </div>
+</div>
 
-    <script>
-      // Mobile menu functionality
-      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-      const closeMobileMenu = document.getElementById("closeMobileMenu");
-      const sidebar = document.getElementById("sidebar");
-      const mobileOverlay = document.getElementById("mobileOverlay");
+<script>
+    // Mobile menu functionality
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const closeMobileMenu = document.getElementById("closeMobileMenu");
+    const sidebar = document.getElementById("sidebar");
+    const mobileOverlay = document.getElementById("mobileOverlay");
 
-      function openMobileMenu() {
-        sidebar.classList.add("active");
-        mobileOverlay.classList.add("active");
+    function openMobileMenu() {
+        sidebar
+            .classList
+            .add("active");
+        mobileOverlay
+            .classList
+            .add("active");
         document.body.style.overflow = "hidden";
-      }
+    }
 
-      function closeMobileMenuFunc() {
-        sidebar.classList.remove("active");
-        mobileOverlay.classList.remove("active");
+    function closeMobileMenuFunc() {
+        sidebar
+            .classList
+            .remove("active");
+        mobileOverlay
+            .classList
+            .remove("active");
         document.body.style.overflow = "";
-      }
+    }
 
-      mobileMenuBtn.addEventListener("click", openMobileMenu);
-      closeMobileMenu.addEventListener("click", closeMobileMenuFunc);
-      mobileOverlay.addEventListener("click", closeMobileMenuFunc);
+    mobileMenuBtn.addEventListener("click", openMobileMenu);
+    closeMobileMenu.addEventListener("click", closeMobileMenuFunc);
+    mobileOverlay.addEventListener("click", closeMobileMenuFunc);
 
-      // Close mobile menu when clicking on menu items
-      const menuItems = document.querySelectorAll("#sidebar .cursor-pointer");
-      menuItems.forEach((item) => {
+    // Close mobile menu when clicking on menu items
+    const menuItems = document.querySelectorAll("#sidebar .cursor-pointer");
+    menuItems.forEach((item) => {
         item.addEventListener("click", () => {
-          if (window.innerWidth < 1024) {
-            closeMobileMenuFunc();
-          }
+            if (window.innerWidth < 1024) {
+                closeMobileMenuFunc();
+            }
         });
-      });
+    });
 
-      // Dropdown functionality
-      function toggleDropdown(dropdownId) {
+    // Dropdown functionality
+    function toggleDropdown(dropdownId) {
         const dropdown = document.getElementById(dropdownId + "Dropdown");
         const icon = document.getElementById(dropdownId + "Icon");
 
         if (dropdown.classList.contains("active")) {
-          dropdown.classList.remove("active");
-          icon.style.transform = "rotate(0deg)";
+            dropdown
+                .classList
+                .remove("active");
+            icon.style.transform = "rotate(0deg)";
         } else {
-          // Close all other dropdowns
-          const allDropdowns = document.querySelectorAll(".dropdown-content");
-          const allIcons = document.querySelectorAll('[id$="Icon"]');
+            // Close all other dropdowns
+            const allDropdowns = document.querySelectorAll(".dropdown-content");
+            const allIcons = document.querySelectorAll('[id$="Icon"]');
 
-          allDropdowns.forEach((dd) => dd.classList.remove("active"));
-          allIcons.forEach((ic) => (ic.style.transform = "rotate(0deg)"));
+            allDropdowns.forEach((dd) => dd.classList.remove("active"));
+            allIcons.forEach((ic) => (ic.style.transform = "rotate(0deg)"));
 
-          // Open clicked dropdown
-          dropdown.classList.add("active");
-          icon.style.transform = "rotate(180deg)";
+            // Open clicked dropdown
+            dropdown
+                .classList
+                .add("active");
+            icon.style.transform = "rotate(180deg)";
         }
-      }
+    }
 
-      // Handle window resize
-      window.addEventListener("resize", () => {
+    // Handle window resize
+    window.addEventListener("resize", () => {
         if (window.innerWidth >= 1024) {
-          closeMobileMenuFunc();
+            closeMobileMenuFunc();
         }
-      });
+    });
 
-      // Sales Chart
-      const salesCtx = document.getElementById("salesChart").getContext("2d");
-      new Chart(salesCtx, {
+    // Sales Chart
+    const salesCtx = document
+        .getElementById("salesChart")
+        .getContext("2d");
+    new Chart(salesCtx, {
         type: "bar",
         data: {
-          labels: ["2006", "2007", "2008", "2009", "2010", "2011", "2012"],
-          datasets: [
-            {
-              label: "Series 1",
-              data: [100, 75, 50, 75, 50, 75, 100],
-              backgroundColor: "#374151",
-              borderRadius: 3,
-              barThickness: 25,
-            },
-            {
-              label: "Series 2",
-              data: [85, 65, 40, 60, 40, 65, 90],
-              backgroundColor: "#60a5fa",
-              borderRadius: 3,
-              barThickness: 25,
-            },
-          ],
+            labels: [
+                "2006",
+                "2007",
+                "2008",
+                "2009",
+                "2010",
+                "2011",
+                "2012"
+            ],
+            datasets: [
+                {
+                    label: "Series 1",
+                    data: [
+                        100,
+                        75,
+                        50,
+                        75,
+                        50,
+                        75,
+                        100
+                    ],
+                    backgroundColor: "#374151",
+                    borderRadius: 3,
+                    barThickness: 25
+                }, {
+                    label: "Series 2",
+                    data: [
+                        85,
+                        65,
+                        40,
+                        60,
+                        40,
+                        65,
+                        90
+                    ],
+                    backgroundColor: "#60a5fa",
+                    borderRadius: 3,
+                    barThickness: 25
+                }
+            ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          aspectRatio: 2.2,
-          plugins: {
-            legend: {
-              display: false,
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2.2,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-          },
-          scales: {
-            x: {
-              grid: {
-                display: false,
-              },
-              ticks: {
-                color: "#6b7280",
-                font: {
-                  size: 12,
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: "#6b7280",
+                        font: {
+                            size: 12
+                        }
+                    }
                 },
-              },
+                y: {
+                    grid: {
+                        display: true,
+                        color: "#f3f4f6"
+                    },
+                    ticks: {
+                        color: "#6b7280",
+                        font: {
+                            size: 12
+                        },
+                        stepSize: 10
+                    },
+                    beginAtZero: true,
+                    max: 100
+                }
             },
-            y: {
-              grid: {
-                display: true,
-                color: "#f3f4f6",
-              },
-              ticks: {
-                color: "#6b7280",
-                font: {
-                  size: 12,
-                },
-                stepSize: 10,
-              },
-              beginAtZero: true,
-              max: 100,
-            },
-          },
-          layout: {
-            padding: {
-              top: 10,
-              bottom: 10,
-            },
-          },
-        },
-      });
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 10
+                }
+            }
+        }
+    });
 
-      // Feedback Chart
-      const feedbackCtx = document
+    // Feedback Chart
+    const feedbackCtx = document
         .getElementById("feedbackChart")
         .getContext("2d");
-      new Chart(feedbackCtx, {
+    new Chart(feedbackCtx, {
         type: "doughnut",
         data: {
-          datasets: [
-            {
-              data: [92, 8],
-              backgroundColor: ["#22c55e", "#ef4444"],
-              borderWidth: 0,
-              borderRadius: 8,
-            },
-          ],
+            datasets: [
+                {
+                    data: [
+                        92, 8
+                    ],
+                    backgroundColor: [
+                        "#22c55e", "#ef4444"
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 8
+                }
+            ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          cutout: "75%",
-          plugins: {
-            legend: {
-              display: false,
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: "75%",
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-          },
-          layout: {
-            padding: 10,
-          },
-        },
-      });
-    </script>
-  </body>
+            layout: {
+                padding: 10
+            }
+        }
+    });
+</script>
+</body>
 </html>
