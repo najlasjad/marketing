@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .dashboard-container {
+            min-height: 100vh;
+        }
+
+        /* Main Content */
+        .main-content {
+            width: 100%;
+            background: #f8fafc;
+        }
+
+        .header {
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .content-area {
+            padding: 32px;
+        }
+
+        /* Upload Form Styles */
+        .upload-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .form-header {
+            padding: 32px 32px 24px;
+            text-align: center;
+        }
+
+        .form-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .upload-form {
+            padding: 0 32px 32px;
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: scale(1.02);
+        }
+
+        .upload-content {
+            pointer-events: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        .upload-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .file-list {
+            margin-top: 16px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 8px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .file-details h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin: 0;
+        }
+
+        .file-details p {
+            font-size: 12px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .file-remove {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .file-remove:hover {
+            background: #fecaca;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-submit {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #2563eb;
+        }
+
+        .btn-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="header-title">Upload Dataset</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.history.back()">
+                        ← Back to Datasets
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- File Upload Form -->
+                <div class="upload-form-container">
+                    <div class="form-header">
+                        <h2 class="form-title">File Attachment Form</h2>
+                        <p class="form-subtitle">Please upload files in a decent manner.</p>
+                    </div>
+
+                    <form class="upload-form" onsubmit="submitForm(event)">
+                        <div class="form-group">
+                            <label for="fileName" class="form-label">Name</label>
+                            <input type="text" id="fileName" name="fileName" class="form-input" placeholder="Enter dataset name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Upload Documents</label>
+                            <div class="upload-area" id="uploadArea" onclick="triggerFileInput()">
+                                <div class="upload-content">
+                                    <div class="upload-icon">☁️</div>
+                                    <h3 class="upload-title">Upload a File</h3>
+                                    <p class="upload-subtitle">Drag and drop files here</p>
+                                </div>
+                                <input type="file" id="fileInput" multiple accept=".csv,.xlsx,.xls,.json,.txt" style="display: none;" onchange="handleFileSelect(event)">
+                            </div>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-cancel" onclick="cancelUpload()">CANCEL</button>
+                            <button type="submit" class="btn btn-submit">SUBMIT</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        // File upload functions
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            displayFileList();
+        }
+
+        function displayFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                let fileIcon = '📄';
+                if (fileExtension === 'csv') fileIcon = '📊';
+                else if (['xlsx', 'xls'].includes(fileExtension)) fileIcon = '📈';
+                else if (fileExtension === 'json') fileIcon = '🔧';
+                else if (fileExtension === 'txt') fileIcon = '📝';
+
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-icon">${fileIcon}</span>
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            <p>${formatFileSize(file.size)} • ${fileExtension.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <button class="file-remove" onclick="removeFile(${index})">Remove</button>
+                `;
+                
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFileList();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+         // Ambil data dari localStorage (jika ada)
+        let storedDatasets = JSON.parse(localStorage.getItem("datasets")) || [];
+
+        // Tambah data baru
+        selectedFiles.forEach(file => {
+            const fileType = file.name.split('.').pop().toUpperCase();
+            const fileSizeMB = formatFileSize(file.size);
+            const createdDate = new Date().toISOString().split("T")[0];
+            
+            storedDatasets.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                name: fileName,
+                type: fileType,
+                size: fileSizeMB,
+                records: "—",
+                created: createdDate,
+                status: "pending"
+            });
+        });
+
+        // Simpan lagi ke localStorage
+localStorage.setItem("datasets", JSON.stringify(storedDatasets));
+
+
+        function cancelUpload() {
+            if (selectedFiles.length > 0 || document.getElementById('fileName').value.trim()) {
+                if (confirm('Are you sure you want to cancel? All changes will be lost.')) {
+                    resetForm();
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('fileName').value = '';
+            selectedFiles = [];
+            displayFileList();
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            files.forEach(file => {
+                // Check file type
+                const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json', 'text/plain'];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['csv', 'xlsx', 'xls', 'json', 'txt'];
+                
+                if (allowedExtensions.includes(fileExtension)) {
+                    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                } else {
+                    alert(`File type .${fileExtension} is not supported. Please upload CSV, Excel, JSON, or TXT files.`);
+                }
+            });
+            displayFileList();
+        });
+
+            setTimeout(() => {
+            alert(`Dataset "${fileName}" uploaded successfully with ${selectedFiles.length} file(s)!`);
+            
+            // Simpan ke localStorage (ini bagian yang sebelumnya kamu punya)
+            let storedDatasets = JSON.parse(localStorage.getItem("datasets")) || [];
+            selectedFiles.forEach(file => {
+                const fileType = file.name.split('.').pop().toUpperCase();
+                const fileSizeMB = formatFileSize(file.size);
+                const createdDate = new Date().toISOString().split("T")[0];
+                
+                storedDatasets.push({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    name: fileName,
+                    type: fileType,
+                    size: fileSizeMB,
+                    records: "—",
+                    created: createdDate,
+                    status: "pending"
+                });
+            });
+            localStorage.setItem("datasets", JSON.stringify(storedDatasets));
+
+            // Redirect ke halaman utama
+            window.location.href = "DatasetPart.html";
+
+            }, 2000);
+
+
+        // Sample data for demonstration (keeping for reference)
+        let datasets = [
+            {id: 1, name: "Customer Behavior 2023", type: "CSV", size: "124.5 MB", records: "45,230", created: "2023-12-15", status: "active"},
+            {id: 2, name: "Sales Performance Q4", type: "Excel", size: "89.2 MB", records: "23,456", created: "2023-11-28", status: "active"},
+            {id: 3, name: "Marketing Campaign Data", type: "JSON", size: "67.8 MB", records: "18,945", created: "2023-11-10", status: "pending"},
+            {id: 4, name: "Product Analytics", type: "CSV", size: "234.7 MB", records: "76,543", created: "2023-10-22", status: "active"},
+            {id: 5, name: "Social Media Metrics", type: "CSV", size: "156.3 MB", records: "32,167", created: "2023-10-05", status: "inactive"}
+        ];
+    </script>
+</body>
+</html>
