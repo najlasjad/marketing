@@ -2,7 +2,7 @@ from django.db import models
 
 
 class RegistrationData(models.Model):
-    idregistrantdata = models.BigIntegerField()
+    idregistrantdata = models.IntegerField()
     groupreg = models.IntegerField()
     regtype = models.IntegerField()
     iddataregkhusustype = models.IntegerField()
@@ -11,10 +11,10 @@ class RegistrationData(models.Model):
     email = models.EmailField()
     idmajordata = models.IntegerField()
     idcountrydata = models.IntegerField()
-    iddataprovences = models.IntegerField()
+    iddataprovinces = models.IntegerField()
     iddataregencies = models.IntegerField()
-    ispaid = models.IntegerField()
-    paymentamount = models.BigIntegerField()
+    ispaid = models.BooleanField()  # Dulu BooleanField → sekarang IntegerField
+    paymentamount = models.IntegerField()  # Karena CSV-nya integer, bukan decimal
 
     def __str__(self):
-        return f"Registrant {self.idregistrantdata} - {self.email}"
+        return str(self.idregistrantdata)

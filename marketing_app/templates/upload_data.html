@@ -283,45 +283,66 @@
                         <p class="form-subtitle">
                             Please upload files in a decent manner.
                         </p>
+                        {% if messages %}
+                            <ul>
+                                {% for message in messages %}
+                                    <li
+                                        style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                                        {{ message }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
                     </div>
 
-                    <form class="upload-form" onsubmit="submitForm(event)">
-                        <div class="form-group">
-                            <label for="fileName" class="form-label">Name</label>
-                            <input
-                                type="text"
-                                id="fileName"
-                                name="fileName"
-                                class="form-input"
-                                placeholder="Enter dataset name"/>
-                        </div>
+                    <form class="upload-form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
 
-                        <div class="form-group">
-                            <label class="form-label">Upload Documents</label>
-                            <div class="upload-area" id="uploadArea" onclick="triggerFileInput()">
-                                <div class="upload-content">
-                                    <div class="upload-icon">☁️</div>
-                                    <h3 class="upload-title">Upload a File</h3>
-                                    <p class="upload-subtitle">Drag and drop files here</p>
-                                </div>
-                                <input
-                                    type="file"
-                                    id="fileInput"
-                                    multiple="multiple"
-                                    accept=".csv,.xlsx,.xls,.json,.txt"
-                                    style="display: none"
-                                    onchange="handleFileSelect(event)"/>
-                            </div>
-                            <div class="file-list" id="fileList"></div>
-                        </div>
+    <!-- Optional: Use form.as_p for other hidden fields if any -->
+    <div class="form-group">
+        <label for="fileName" class="form-label">Name</label>
+        <input
+            type="text"
+            id="fileName"
+            name="fileName"
+            class="form-input"
+            placeholder="Enter dataset name"/>
+    </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-cancel" onclick="location.href='{% url 'dataset' %}'">
-                                CANCEL
-                            </button>
-                            <button type="submit" class="btn btn-submit">SUBMIT</button>
-                        </div>
-                    </form>
+    <div class="form-group">
+        <label class="form-label">Upload Documents</label>
+        <div class="upload-area" id="uploadArea" onclick="triggerFileInput()">
+            <div class="upload-content">
+                <div class="upload-icon">☁️</div>
+                <h3 class="upload-title">Upload a File</h3>
+                <p class="upload-subtitle">Drag and drop files here</p>
+            </div>
+
+            <!-- This is the real input Django will process -->
+            <input
+                type="file"
+                id="fileInput"
+                name="file"
+                accept=".csv"
+                style="display: none"
+                onchange="handleFileSelect(event)" />
+        </div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="form-actions">
+        <button
+            type="button"
+            class="btn btn-cancel"
+            onclick="location.href='{% url 'dataset' %}'">
+            CANCEL
+        </button>
+        <button type="submit" class="btn btn-submit">SUBMIT</button>
+    </div>
+</form>
+
                 </div>
             </div>
         </div>
