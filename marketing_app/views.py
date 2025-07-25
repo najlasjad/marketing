@@ -65,51 +65,6 @@ def dataset_view(request):
 
 
 @login_required
-def upload_dataset(request):
-    context = {}
-    if request.method == 'POST':
-        form = UploadCSVForm(request.POST, request.FILES)
-        if form.is_valid():
-            csv_file = request.FILES['file']
-            try:
-                df = pd.read_csv(csv_file)
-                df.dropna(inplace=True)
-
-                records = [
-                    RegistrationData(
-                        idregistrantdata=row['idregistrantdata'],
-                        groupreg=row['groupreg'],
-                        regtype=row['regtype'],
-                        iddataregkhusustype=row['iddataregkhusustype'],
-                        idschooltypedata=row['idschooltypedata'],
-                        idschooljurusandata=row['idschooljurusandata'],
-                        email=row['email'],
-                        idmajordata=row['idmajordata'],
-                        idcountrydata=row['idcountrydata'],
-                        iddataprovences=row['iddataprovences'],
-                        iddataregencies=row['iddataregencies'],
-                        ispaid=row['ispaid'],
-                        paymentamount=row['paymentamount'],
-                        ump=row['ump'],
-                    )
-                    for _, row in df.iterrows()
-                ]
-
-                RegistrationData.objects.bulk_create(records)
-
-                context = {
-                    'form': form,
-                    'success': True,
-                    'rows': len(records)
-                }
-            except Exception as e:
-                context = {
-                    'form': form,
-                    'error': str(e)
-                }
-        else:
-            context = {'form': form}
-    else:
-        context = {'form': UploadCSVForm()}
-
-    return render(request, 'dataset.html', context)
+def upload_data_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'upload_data.html', {'is_admin': is_admin})

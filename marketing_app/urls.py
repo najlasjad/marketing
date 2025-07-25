@@ -9,4 +9,5 @@ urlpatterns = [
     path('prediction/', views.prediction_view, name='prediction'),
     path('visualization/', views.visualization_view, name='visualization'),
     path('dataset/', views.dataset_view, name='dataset'),
+    path('upload_data/', views.upload_data_view, name='upload_data'),
 ]
