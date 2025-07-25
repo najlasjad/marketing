@@ -1,22 +1,15 @@
-{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
-content %}
-<div class="p-4">
-  <!-- Header -->
-  <div class="bg-white shadow-sm border-b p-4 rounded-lg">
-    <h1 class="text-xl font-semibold text-gray-700">Dashboard Overview</h1>
+{% extends 'base.html' %} {% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Sales Chart -->
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-4 text-gray-700">Sales Chart</h2>
+    <canvas id="salesChart" width="400" height="200"></canvas>
   </div>
 
-  <!-- Example Content -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-    <!-- Example Chart Cards -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <h2 class="text-sm font-semibold text-gray-500 mb-2">Sales Chart</h2>
-      <canvas id="salesChart" class="w-full h-48"></canvas>
-    </div>
-
-    <div class="bg-white p-4 rounded-lg shadow">
-      <h2 class="text-sm font-semibold text-gray-500 mb-2">Feedback</h2>
-      <canvas id="feedbackChart" class="w-full h-48"></canvas>
-    </div>
+  <!-- Feedback Chart -->
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-4 text-gray-700">Customer Feedback</h2>
+    <canvas id="feedbackChart" width="400" height="200"></canvas>
   </div>
 </div>
+{% endblock %}

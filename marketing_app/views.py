@@ -31,12 +31,30 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
 @login_required
 def dashboard_view(request):
     is_admin = request.user.is_superuser or request.user.is_staff
     return render(request, 'dashboard.html', {'is_admin': is_admin})
 
 
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+@login_required
+def prediction_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'prediction.html', {'is_admin': is_admin})
+
+
+@login_required
+def visualization_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'visualization.html', {'is_admin': is_admin})
+
+
+@login_required
+def dataset_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'dataset.html', {'is_admin': is_admin})
