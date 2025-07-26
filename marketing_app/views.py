@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib import messages
-import pandas as pd
+# from django.contrib import messages
+# import pandas as pd
 
-from .forms import UploadCSVForm
-from .models import RegistrationData
+# from .forms import UploadCSVForm
+# from .models import RegistrationData
+
+from .forms import DocumentForm
 
 
 def start_view(request):
@@ -65,56 +67,13 @@ def dataset_view(request):
 
 
 @login_required
-def upload_data_view(request):
-    is_admin = request.user.is_superuser or request.user.is_staff
-
+def upload_file(request):
     if request.method == 'POST':
-        form = UploadCSVForm(request.POST, request.FILES)
+        form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            csv_file = form.cleaned_data['file']
-            try:
-                # Baca CSV dan skip baris error
-                df = pd.read_csv(csv_file, on_bad_lines='skip',
-                                 delimiter=';', encoding='utf-8')
-
-                # Cek apakah semua kolom penting ada
-                required_columns = [
-                    'idregistrantdata', 'groupreg', 'regtype',
-                    'iddataregkhusustype', 'idschooltypedata', 'idschooljurusandata',
-                    'email', 'idmajordata', 'idcountrydata', 'iddataprovinces',
-                    'iddataregencies', 'ispaid', 'paymentamount'
-                ]
-                missing = [
-                    col for col in required_columns if col not in df.columns]
-                if missing:
-                    raise ValueError(
-                        f"Missing columns in CSV: {', '.join(missing)}")
-
-                # Simpan ke database
-                for _, row in df.iterrows():
-                    RegistrationData.objects.create(
-                        idregistrantdata=row['idregistrantdata'],
-                        groupreg=row['groupreg'],
-                        regtype=row['regtype'],
-                        iddataregkhusustype=row['iddataregkhusustype'],
-                        idschooltypedata=row['idschooltypedata'],
-                        idschooljurusandata=row['idschooljurusandata'],
-                        email=row['email'],
-                        idmajordata=row['idmajordata'],
-                        idcountrydata=row['idcountrydata'],
-                        iddataprovinces=row['iddataprovinces'],
-                        iddataregencies=row['iddataregencies'],
-                        ispaid=row['ispaid'],
-                        paymentamount=row['paymentamount']
-                    )
-
-                messages.success(
-                    request, "File uploaded and data saved successfully.")
-                return redirect('dataset')
-
-            except Exception as e:
-                messages.error(request, f"Error processing file: {str(e)}")
+            form.save()
+            # define a success page or render success message
+            return render(request, 'dataset.html', {'form': form})
     else:
-        form = UploadCSVForm()
-
-    return render(request, 'upload_data.html', {'form': form, 'is_admin': is_admin})
+        form = DocumentForm()
+    return render(request, 'upload_data.html', {'form': form})

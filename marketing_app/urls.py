@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
@@ -9,5 +11,9 @@ urlpatterns = [
     path('prediction/', views.prediction_view, name='prediction'),
     path('visualization/', views.visualization_view, name='visualization'),
     path('dataset/', views.dataset_view, name='dataset'),
-    path('upload_data/', views.upload_data_view, name='upload_data'),
+    path('upload_data/', views.upload_file, name='upload_data'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
