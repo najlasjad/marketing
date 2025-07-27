@@ -2,12 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-
 from .forms import DocumentForm
 from .models import Document
-
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+from django.shortcuts import get_object_or_404
 
 
 def start_view(request):
@@ -99,7 +98,29 @@ def upload_file(request):
     return render(request, 'upload_data.html', {'form': form})
 
 
-# @login_required
-# def dataset_list(request):
-#     datasets = Document.object.all()
-#     return render(request, 'dataset.html', {'datasets': datasets})
+@login_required
+def view_dataset(request, id):
+    dataset = get_object_or_404(Document, id=id)
+    return render(request, 'view_dataset.html', {'dataset': dataset})
+
+
+@login_required
+def edit_dataset(request, id):
+    dataset = get_object_or_404(Document, id=id)
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES, instance=dataset)
+        if form.is_valid():
+            form.save()
+            return redirect('dataset')
+    else:
+        form = DocumentForm(instance=dataset)
+    return render(request, 'upload_data.html', {'form': form, 'edit': True})
+
+
+@login_required
+def delete_dataset(request, id):
+    dataset = get_object_or_404(Document, id=id)
+    if request.method == 'POST':
+        dataset.delete()
+        return redirect('dataset')
+    return render(request, 'confirm_delete.html', {'dataset': dataset})

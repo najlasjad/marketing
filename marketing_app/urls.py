@@ -12,8 +12,10 @@ urlpatterns = [
     path('visualization/', views.visualization_view, name='visualization'),
     path('dataset/', views.dataset_view, name='dataset'),
     path('upload_data/', views.upload_file, name='upload_data'),
+    path('datasets/<int:id>/view/', views.view_dataset, name='view_dataset'),
+    path('datasets/<int:id>/edit/', views.edit_dataset, name='edit_dataset'),
+    path('datasets/<int:id>/delete/', views.delete_dataset, name='delete_dataset'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

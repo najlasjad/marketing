@@ -636,22 +636,28 @@
       }
 
       function viewDataset(id) {
-        const dataset = datasets.find((d) => d.id === id);
-        showNotification(`Viewing: ${dataset.name}`, "success");
+        location.href = `/datasets/${id}/view/`;
       }
 
       function editDataset(id) {
-        const dataset = datasets.find((d) => d.id === id);
-        showNotification(`Editing: ${dataset.name}`, "info");
+        location.href = `/datasets/${id}/edit/`;
       }
 
       function deleteDataset(id) {
-        const dataset = datasets.find((d) => d.id === id);
-        if (confirm(`Are you sure you want to delete "${dataset.name}"?`)) {
-          datasets = datasets.filter((d) => d.id !== id);
-          filteredDatasets = filteredDatasets.filter((d) => d.id !== id);
-          renderTable();
-          showNotification(`${dataset.name} has been deleted`, "success");
+        if (confirm("Are you sure you want to delete this dataset?")) {
+          fetch(`/datasets/${id}/delete/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+          }).then((res) => {
+            if (res.ok) {
+              showNotification("Dataset deleted successfully", "success");
+              location.reload();
+            } else {
+              showNotification("Failed to delete dataset", "error");
+            }
+          });
         }
       }
 
@@ -729,6 +735,24 @@
 
       // Initialize
       renderTable();
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
     </script>
   </body>
 </html>
