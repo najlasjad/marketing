@@ -48,19 +48,6 @@ def dashboard_view(request):
 
 
 @login_required
-def prediction_view(request):
-    is_admin = request.user.is_superuser or request.user.is_staff
-    return render(request, 'prediction.html', {'is_admin': is_admin})
-
-
-@login_required
-def visualization_view(request):
-    is_admin = request.user.is_superuser or request.user.is_staff
-    return render(request, 'visualization.html', {'is_admin': is_admin})
-
-
-@login_required
-@login_required
 def dataset_view(request):
     is_admin = request.user.is_superuser or request.user.is_staff
 
@@ -134,3 +121,15 @@ def delete_dataset(request, id):
         dataset.delete()
         return redirect('dataset')
     return render(request, 'confirm_delete.html', {'dataset': dataset})
+
+
+@login_required
+def prediction_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'prediction.html', {'is_admin': is_admin})
+
+
+@login_required
+def visualization_view(request):
+    is_admin = request.user.is_superuser or request.user.is_staff
+    return render(request, 'visualization.html', {'is_admin': is_admin})
