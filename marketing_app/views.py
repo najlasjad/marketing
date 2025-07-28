@@ -7,6 +7,7 @@ from .models import Document
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.shortcuts import get_object_or_404
+from django.http import FileResponse
 
 
 def start_view(request):
@@ -100,8 +101,17 @@ def upload_file(request):
 
 @login_required
 def view_dataset(request, id):
-    dataset = get_object_or_404(Document, id=id)
-    return render(request, 'view_dataset.html', {'dataset': dataset})
+    document = get_object_or_404(Document, pk=id)
+
+    # Buka file dan kembalikan sebagai FileResponse untuk download
+    if document.file:
+        response = FileResponse(document.file.open('rb'), as_attachment=True)
+        response[
+            'Content-Disposition'] = f'attachment; filename="{document.file.name.split("/")[-1]}"'
+        return response
+    else:
+        from django.http import HttpResponseNotFound
+        return HttpResponseNotFound("File not found.")
 
 
 @login_required
