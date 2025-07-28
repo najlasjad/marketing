@@ -1,5 +1,144 @@
-{% extends 'base.html' %} {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <h1>ini Visualization</h1>
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    .mpld3-figure {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .mpld3-figure > svg {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .main-content {
+        max-width: 100%;
+        min-height: 100vh;
+        background: #ffffff;
+        border-radius: 10px;
+        margin: 20px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1)
+    }
+
+    .header {
+        background: white;
+        padding: 16px 32px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .content-area {
+        padding: 32px;
+    }
+
+    .no-data, .empty-state {
+        text-align: center;
+        margin-top: 60px;
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .empty-state-description {
+        font-size: 0.9rem;
+        color: #94a3b8;
+    }
+</style>
+
+<div class="main-content mx-auto px-4 py-8">
+    <h1 class="text-xl font-bold mb-4">Data Visualization</h1>
+
+    <form method="get" class="mb-6">
+        <div class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="doc" class="block mb-2 text-sm font-medium text-gray-700">Select Dataset:</label>
+                <select name="doc" id="doc"
+                        class="p-2 border border-gray-300 rounded-md w-full max-w-sm">
+                    <option value="">-- Select --</option>
+                    {% for d in documents %}
+                        <option value="{{ d.id }}" {% if selected_id|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
+                            {{ d.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mt-6">
+                <button type="submit" class="btn btn-primary">Show Visualization</button>
+            </div>
+        </div>
+    </form>
+
+    {% if regtype_html %}
+        <div class="mb-10" id="viz-section">
+            <div class="mpld3-figure">
+                {{ regtype_html|safe }}
+            </div>
+        </div>
+    {% elif not selected_id %}
+        <div class="empty-state" id="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">No datasets found</div>
+            <div class="empty-state-description">Try selecting a dataset to see the visualization</div>
+        </div>
+    {% endif %}
 </div>
+
+<script>
+    // Client-side feedback if no selection
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectEl = document.getElementById('doc');
+        const emptyState = document.getElementById('empty-state');
+        const vizSection = document.getElementById('viz-section');
+
+        if (selectEl && selectEl.value === "") {
+            if (emptyState) emptyState.style.display = "block";
+            if (vizSection) vizSection.style.display = "none";
+        } else {
+            if (emptyState) emptyState.style.display = "none";
+            if (vizSection) vizSection.style.display = "block";
+        }
+    });
+</script>
 {% endblock %}
