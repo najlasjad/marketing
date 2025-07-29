@@ -18,7 +18,7 @@
         background: #ffffff;
         border-radius: 10px;
         margin: 20px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1)
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     }
 
     .header {
@@ -93,8 +93,7 @@
         <div class="flex flex-wrap items-end gap-4">
             <div class="flex-1 min-w-[200px]">
                 <label for="doc" class="block mb-2 text-sm font-medium text-gray-700">Select Dataset:</label>
-                <select name="doc" id="doc"
-                        class="p-2 border border-gray-300 rounded-md w-full max-w-sm">
+                <select name="doc" id="doc" class="p-2 border border-gray-300 rounded-md w-full max-w-sm">
                     <option value="">-- Select --</option>
                     {% for d in documents %}
                         <option value="{{ d.id }}" {% if selected_id|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
@@ -103,7 +102,6 @@
                     {% endfor %}
                 </select>
             </div>
-
             <div class="mt-6">
                 <button type="submit" class="btn btn-primary">Show Visualization</button>
             </div>
@@ -111,20 +109,32 @@
     </form>
 
     {% if regtype_html %}
-        <div class="mb-10" id="viz-section">
-            <h2 class="text-lg font-semibold mb-2">Distribusi Tipe Registrasi</h2>
-            <div class="mpld3-figure">
-                {{ regtype_html|safe }}
-            </div>
+        <div class="mb-10" id="regtype-viz-section">
+            <div class="mpld3-figure">{{ regtype_html|safe }}</div>
         </div>
     {% endif %}
 
     {% if schooltype_html %}
         <div class="mb-10" id="schooltype-viz-section">
-            <h2 class="text-lg font-semibold mb-2">Distribusi Tipe Sekolah Asal</h2>
-            <div class="mpld3-figure">
-                {{ schooltype_html|safe }}
-            </div>
+            <div class="mpld3-figure">{{ schooltype_html|safe }}</div>
+        </div>
+    {% endif %}
+
+    {% if province_html %}
+        <div class="mb-10" id="province-viz-section">
+            <div class="mpld3-figure">{{ province_html|safe }}</div>
+        </div>
+    {% endif %}
+
+    {% if payment_html %}
+        <div class="mb-10" id="payment-viz-section">
+            <div class="mpld3-figure">{{ payment_html|safe }}</div>
+        </div>
+    {% endif %}
+
+    {% if ump_html %}
+        <div class="mb-10" id="ump-viz-section">
+            <div class="mpld3-figure">{{ ump_html|safe }}</div>
         </div>
     {% endif %}
 
@@ -138,21 +148,30 @@
 </div>
 
 <script>
-    // Client-side feedback if no selection
     document.addEventListener('DOMContentLoaded', function () {
         const selectEl = document.getElementById('doc');
         const emptyState = document.getElementById('empty-state');
-        const vizSection = document.getElementById('viz-section');
-        const schooltypeViz = document.getElementById('schooltype-viz-section');
+
+        const sections = [
+            'regtype-viz-section',
+            'schooltype-viz-section',
+            'province-viz-section',
+            'payment-viz-section',
+            'ump-viz-section'
+        ];
 
         if (selectEl && selectEl.value === "") {
             if (emptyState) emptyState.style.display = "block";
-            if (vizSection) vizSection.style.display = "none";
-            if (schooltypeViz) schooltypeViz.style.display = "none";
+            sections.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) section.style.display = "none";
+            });
         } else {
             if (emptyState) emptyState.style.display = "none";
-            if (vizSection) vizSection.style.display = "block";
-            if (schooltypeViz) schooltypeViz.style.display = "block";
+            sections.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) section.style.display = "block";
+            });
         }
     });
 </script>
