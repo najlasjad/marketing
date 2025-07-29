@@ -112,11 +112,23 @@
 
     {% if regtype_html %}
         <div class="mb-10" id="viz-section">
+            <h2 class="text-lg font-semibold mb-2">Distribusi Tipe Registrasi</h2>
             <div class="mpld3-figure">
                 {{ regtype_html|safe }}
             </div>
         </div>
-    {% elif not selected_id %}
+    {% endif %}
+
+    {% if schooltype_html %}
+        <div class="mb-10" id="schooltype-viz-section">
+            <h2 class="text-lg font-semibold mb-2">Distribusi Tipe Sekolah Asal</h2>
+            <div class="mpld3-figure">
+                {{ schooltype_html|safe }}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if not selected_id %}
         <div class="empty-state" id="empty-state">
             <div class="empty-state-icon">📊</div>
             <div class="empty-state-title">No datasets found</div>
@@ -131,14 +143,18 @@
         const selectEl = document.getElementById('doc');
         const emptyState = document.getElementById('empty-state');
         const vizSection = document.getElementById('viz-section');
+        const schooltypeViz = document.getElementById('schooltype-viz-section');
 
         if (selectEl && selectEl.value === "") {
             if (emptyState) emptyState.style.display = "block";
             if (vizSection) vizSection.style.display = "none";
+            if (schooltypeViz) schooltypeViz.style.display = "none";
         } else {
             if (emptyState) emptyState.style.display = "none";
             if (vizSection) vizSection.style.display = "block";
+            if (schooltypeViz) schooltypeViz.style.display = "block";
         }
     });
 </script>
+
 {% endblock %}

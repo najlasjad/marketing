@@ -140,6 +140,7 @@ def visualization_view(request):
     documents = Document.objects.all().order_by('-uploaded_at')
     selected_id = request.GET.get('doc')
     regtype_html = None
+    schooltype_html = None
 
     regtype_mapping = {
         0: "Unknown",
@@ -163,6 +164,13 @@ def visualization_view(request):
         18: "Fast Track",
         19: "Jalur 7 - UNBK",
         20: "Jalur 8 - Khusus"
+    }
+
+    schooltype_mapping = {
+        1: "SMA",
+        2: "SMK",
+        3: "MA",
+        9: "Lainnya"
     }
 
     if selected_id:
@@ -189,6 +197,7 @@ def visualization_view(request):
             df = df.sort_values(by='ispaid', ascending=False)
             df = df.drop_duplicates(subset='email', keep='first')
 
+            # 🎯 Chart 1: Registrasi
             if 'regtype' in df.columns:
                 df['regtype'] = pd.to_numeric(df['regtype'], errors='coerce')
                 df = df.dropna(subset=['regtype'])
@@ -225,9 +234,41 @@ def visualization_view(request):
                     # Convert to HTML
                     regtype_html = pio.to_html(fig, full_html=False)
 
+            # 🏫 Chart 2: Tipe Sekolah
+            if 'idschooltypedata' in df.columns:
+                df['idschooltypedata'] = pd.to_numeric(
+                    df['idschooltypedata'], errors='coerce')
+                df = df.dropna(subset=['idschooltypedata'])
+                df['idschooltypedata'] = df['idschooltypedata'].astype(int)
+                df['schooltype_name'] = df['idschooltypedata'].map(
+                    schooltype_mapping)
+
+                if not df['schooltype_name'].isna().all():
+                    schooltype_counts = df['schooltype_name'].value_counts(
+                    ).reset_index()
+                    schooltype_counts.columns = ['schooltype_name', 'count']
+
+                    fig2 = px.bar(
+                        schooltype_counts,
+                        x='schooltype_name',
+                        y='count',
+                        text_auto=True,
+                        color='count',
+                        title='Distribusi Tipe Sekolah Asal',
+                        color_continuous_scale='RdPu'
+                    )
+                    fig2.update_layout(
+                        xaxis_title='Tipe Sekolah',
+                        yaxis_title='Jumlah Siswa',
+                        title_font=dict(size=18, color='black'),
+                        xaxis_tickangle=0
+                    )
+                    schooltype_html = pio.to_html(fig2, full_html=False)
+
     return render(request, 'visualization.html', {
         'documents': documents,
         'selected_id': selected_id,
         'regtype_html': regtype_html,
         'regtype_mapping': regtype_mapping,
+        'schooltype_html': schooltype_html,
     })
