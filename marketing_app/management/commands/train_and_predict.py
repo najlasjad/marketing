@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import pickle
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, roc_auc_score
@@ -8,35 +9,34 @@ from xgboost import XGBClassifier
 
 
 class Command(BaseCommand):
-    help = 'Train model from one CSV and predict on another'
+    help = "Train XGBoost model to predict payment status"
 
-    def add_arguments(self, parser):
-        parser.add_argument('--train_file', type=str, required=True,
-                            help='Nama file training (di folder documents)')
-        parser.add_argument('--predict_file', type=str, required=True,
-                            help='Nama file untuk prediksi (di folder documents)')
+    def handle(self, *args, **kwargs):
+        # Load dataset
+        df = pd.read_csv("data/2022_encoded_data.csv",
+                         on_bad_lines='skip', delimiter=';')
 
-    def handle(self, *args, **options):
-        # Path ke folder documents/
-        base_path = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), '../../../', 'documents')
-        base_path = os.path.abspath(base_path)
+        # Check target column
+        if 'ispaid' not in df.columns:
+            self.stderr.write(self.style.ERROR(
+                "❌ Column 'ispaid' not found in dataset"))
+            self.stderr.write(f"🧪 Available columns: {df.columns.tolist()}")
+            return
 
-        train_file = options['train_file']
-        predict_file = options['predict_file']
+        y = df['ispaid']
+        columns_to_drop = ['idregistrantdata',
+                           'email', 'ispaid', 'paymentamount']
+        X = df.drop(
+            columns=[col for col in columns_to_drop if col in df.columns])
 
-        train_path = os.path.join(base_path, train_file)
-        predict_path = os.path.join(base_path, predict_file)
+        # Train-test split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
 
-        # 1. Load data training
-        self.stdout.write(f"📥 Loading training data from: {train_path}")
-        df_train = pd.read_csv(train_path)
-        X_train = df_train.drop(
-            columns=['idregistrantdata', 'email', 'ispaid', 'paymentamount'])
-        y_train = df_train['ispaid']
-
-        # 2. Train model
         scale_pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)
+
+        # Train model
         xgb = XGBClassifier(
             scale_pos_weight=scale_pos_weight,
             use_label_encoder=False,
@@ -44,31 +44,26 @@ class Command(BaseCommand):
             random_state=42
         )
         xgb.fit(X_train, y_train)
-        self.stdout.write("✅ Model trained successfully")
 
-        # 3. Load data prediksi
-        self.stdout.write(f"🔎 Predicting using data from: {predict_path}")
-        df_predict = pd.read_csv(predict_path)
-        X_predict = df_predict.drop(
-            columns=['idregistrantdata', 'email', 'ispaid', 'paymentamount'])
+        # Evaluate
+        y_pred = xgb.predict(X_test)
+        y_prob = xgb.predict_proba(X_test)[:, 1]
 
-        y_prob = xgb.predict_proba(X_predict)[:, 1]
-        predicted_payers = y_prob.sum()
-        total_students = len(X_predict)
+        accuracy = accuracy_score(y_test, y_pred) * 100
+        roc_auc = roc_auc_score(y_test, y_prob)
 
-        self.stdout.write("\n=== Estimasi Pembayar ===")
-        self.stdout.write(f"Total siswa di data prediksi: {total_students}")
-        self.stdout.write(
-            f"Perkiraan jumlah yang akan bayar: {predicted_payers:.0f}")
+        self.stdout.write("\n=== XGBoost Model Evaluation ===")
+        self.stdout.write(f"Accuracy: {accuracy:.2f}%")
+        self.stdout.write(f"ROC-AUC Score: {roc_auc:.4f}")
+        self.stdout.write("Classification Report:")
+        self.stdout.write(classification_report(
+            y_test, y_pred, target_names=['Will Not Pay', 'Will Pay']))
+        self.stdout.write("Confusion Matrix:")
+        self.stdout.write(str(confusion_matrix(y_test, y_pred)))
 
-        # 4. Simpan hasil prediksi
-        df_predict['predicted_proba_paid'] = y_prob
-        output_file = os.path.join(base_path, "prediksi_output.csv")
-        df_predict.to_csv(output_file, index=False)
-        self.stdout.write(f"📄 Hasil prediksi disimpan ke: {output_file}")
-
-        # 5. Simpan model
-        model_path = os.path.join(base_path, "xgb_model.pkl")
+        model_path = os.path.join('xgb_model.pkl')
         with open(model_path, "wb") as f:
             pickle.dump(xgb, f)
-        self.stdout.write(f"✅ Model disimpan sebagai: {model_path}")
+
+        self.stdout.write(self.style.SUCCESS(
+            f"\n✅ Model saved to {model_path}"))
