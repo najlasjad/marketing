@@ -1,5 +1,337 @@
 {% extends 'base.html' %} {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <h1>ini prediction</h1>
-</div>
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Payment Predictor</title>
+    <style>
+      .container {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .graduation-icon {
+        width: 48px;
+        height: 48px;
+        background: #1a365d;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: white;
+        font-size: 24px;
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 16px;
+        color: #718096;
+        font-weight: 400;
+      }
+
+      .section {
+        margin-bottom: 32px;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+      }
+
+      .section-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+
+      .select-wrapper {
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .select {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #f7fafc;
+        color: #2d3748;
+        appearance: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .select:focus {
+        outline: none;
+        border-color: #1a365d;
+        box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+      }
+
+      .select-arrow {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #a0aec0;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .info-label {
+        font-size: 15px;
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .info-value {
+        font-size: 15px;
+        color: #2d3748;
+        font-weight: 600;
+      }
+
+      .email {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .email-icon {
+        margin-right: 8px;
+        color: #a0aec0;
+      }
+
+      .email-text {
+        color: #4a5568;
+        font-size: 15px;
+      }
+
+      .financial-data {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 32px;
+      }
+
+      .financial-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .financial-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .financial-label {
+        font-size: 15px;
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .financial-value {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .ump-value {
+        color: #3182ce;
+      }
+
+      .payment-value {
+        color: #38a169;
+      }
+
+      .ratio-value {
+        color: #805ad5;
+      }
+
+      .predict-button {
+        width: 100%;
+        background: #1a365d;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 18px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .predict-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+      }
+
+      .predict-icon {
+        margin-right: 8px;
+        font-size: 18px;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: #718096;
+        font-size: 13px;
+      }
+
+      .footer-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .footer-icon {
+        margin-right: 6px;
+        font-size: 14px;
+      }
+
+      .claude-tag {
+        background: #a0aec0;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-left: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="graduation-icon">🎓</div>
+        <h1 class="title">Student Payment Predictor</h1>
+        <p class="subtitle">
+          Predict 2023 payment status using 2022 training data
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">
+          <span class="section-icon">🏫</span>
+          Select Student (2023):
+        </h2>
+        <div class="select-wrapper">
+          <select class="select">
+            <option>REG2023001</option>
+          </select>
+          <span class="select-arrow">▼</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Student Information</h2>
+        <div class="info-row">
+          <span class="info-label">Registration ID:</span>
+          <span class="info-value">REG2023001</span>
+        </div>
+        <div class="email">
+          <span class="email-icon">✉</span>
+          <span class="email-text">budi.santoso@email.com</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Academic Background</h2>
+        <div class="info-row">
+          <span class="info-label">School Type:</span>
+          <span class="info-value">SMA</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">School Major:</span>
+          <span class="info-value"
+            >IPA <span class="claude-tag">Claude content</span></span
+          >
+        </div>
+        <div class="info-row">
+          <span class="info-label">Target Major:</span>
+          <span class="info-value">Computer Science</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">
+          <span class="section-icon">📍</span>
+          Location & Economic Data
+        </h2>
+        <div class="info-row">
+          <span class="info-label">Province:</span>
+          <span class="info-value">Jawa Barat</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Regency:</span>
+          <span class="info-value">Bekasi</span>
+        </div>
+      </div>
+
+      <div class="financial-data">
+        <div class="financial-row">
+          <span class="financial-label">UMP 2023:</span>
+          <span class="financial-value ump-value">Rp 4.956.961</span>
+        </div>
+        <div class="financial-row">
+          <span class="financial-label">Payment Amount:</span>
+          <span class="financial-value payment-value">Rp 15.000.000</span>
+        </div>
+        <div class="financial-row">
+          <span class="financial-label">Payment/UMP Ratio:</span>
+          <span class="financial-value ratio-value">3.03x</span>
+        </div>
+      </div>
+
+      <button class="predict-button">
+        <span class="predict-icon">💲</span>
+        Predict Payment Status
+      </button>
+
+      <div class="footer">
+        <div class="footer-row">
+          <span class="footer-icon">🤖</span>
+          <span>Model trained on 2022 registration data</span>
+        </div>
+        <div class="footer-row">
+          <span class="footer-icon">📊</span>
+          <span>Factors: UMP ratio, school type, target major</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
 {% endblock %}
