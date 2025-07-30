@@ -101,8 +101,15 @@ def dashboard_view(request):
     if not selected_id and documents.exists():
         selected_id = str(documents.first().id)
 
+    # Inisialisasi
     payment_html = None
+    total_registrants = 0
+    student_paid = 0
+    student_unpaid = 0
+    growth_chart_html = None
+    growth_data = []
 
+    # Grafik Payment Pie Chart (per dokumen terpilih)
     if selected_id:
         doc = get_object_or_404(Document, pk=selected_id)
 
@@ -122,7 +129,6 @@ def dashboard_view(request):
             'idcountrydata', 'iddataprovinces',
             'iddataregencies', 'ispaid', 'paymentamount', 'ump'
         ]
-
         available_cols = [col for col in expected_cols if col in df.columns]
         df = df[available_cols]
 
@@ -131,37 +137,108 @@ def dashboard_view(request):
             df = df.drop_duplicates(subset='email', keep='first')
 
             total_registrants = len(df)
+            student_paid = df[df['ispaid'] == 1].shape[0]
+            student_unpaid = df[df['ispaid'] == 0].shape[0]
 
-            student_paid = df[df['ispaid'] ==
-                              1].shape[0] if 'ispaid' in df.columns else 0
-            student_unpaid = df[df['ispaid'] ==
-                                0].shape[0] if 'ispaid' in df.columns else 0
+            payment_counts = df['ispaid'].value_counts().sort_index()
+            labels = ['Not Yet Paid', 'Payment Completed']
+            colors = ['rgb(165, 0, 38)', 'rgb(255, 160, 122)']
 
-            if 'ispaid' in df.columns:
-                payment_counts = df['ispaid'].value_counts().sort_index()
-                labels = ['Not Yet Paid', 'Payment Completed']
-                colors = ['rgb(165, 0, 38)', 'rgb(255, 160, 122)']
+            fig1 = go.Figure(
+                data=[
+                    go.Pie(
+                        labels=labels,
+                        values=payment_counts,
+                        marker=dict(colors=colors),
+                        textinfo='percent+label',
+                        insidetextorientation='radial',
+                        textfont=dict(size=14, color='black')
+                    )
+                ]
+            )
 
-                fig1 = go.Figure(
-                    data=[
-                        go.Pie(
-                            labels=labels,
-                            values=payment_counts,
-                            marker=dict(colors=colors),
-                            textinfo='percent+label',
-                            insidetextorientation='radial',
-                            textfont=dict(size=14, color='black')
-                        )
-                    ]
-                )
+            fig1.update_layout(
+                title_text='Distribution of Students by Payment Status',
+                title_font=dict(size=18, color='black'),
+                showlegend=False
+            )
 
-                fig1.update_layout(
-                    title_text='Distribution of Students by Payment Status',
-                    title_font=dict(size=18, color='black'),
-                    showlegend=False
-                )
+            payment_html = pio.to_html(fig1, full_html=False)
 
-                payment_html = pio.to_html(fig1, full_html=False)
+    # Statistik pertumbuhan dari semua dokumen
+    yearly_stats = {}
+
+    for doc in documents:
+        try:
+            df = pd.read_csv(doc.file.path, delimiter=';',
+                             encoding='utf-8', low_memory=False)
+        except Exception:
+            df = pd.read_csv(doc.file.path)
+
+        if 'email' in df.columns:
+            df = df.drop_duplicates(subset='email', keep='first')
+            registrants = df.shape[0]
+            paid = df[df['ispaid'] ==
+                      1].shape[0] if 'ispaid' in df.columns else 0
+
+            yearly_stats[doc.name] = {
+                "registrants": registrants,
+                "paid": paid
+            }
+
+    sorted_years = sorted(yearly_stats.keys())
+
+    # Hitung pertumbuhan persen
+    for i in range(1, len(sorted_years)):
+        prev = yearly_stats[sorted_years[i - 1]]
+        curr = yearly_stats[sorted_years[i]]
+
+        reg_growth = (
+            (curr['registrants'] - prev['registrants']) / prev['registrants']) * 100
+        paid_growth = ((curr['paid'] - prev['paid']) / prev['paid']) * 100
+
+        growth_data.append({
+            "year": sorted_years[i],
+            "registrants_growth": round(reg_growth, 2),
+            "paid_growth": round(paid_growth, 2)
+        })
+
+    # Grafik pertumbuhan pendaftar & pembayaran
+    if yearly_stats:
+        years = sorted_years
+        registrants = [yearly_stats[y]['registrants'] for y in years]
+        paid = [yearly_stats[y]['paid'] for y in years]
+
+        fig_growth = go.Figure()
+
+        fig_growth.add_trace(go.Scatter(
+            x=years,
+            y=registrants,
+            mode='lines+markers',
+            name='Total Registrants',
+            line=dict(color='rgba(100, 149, 237, 0.8)', width=3),  # soft blue
+            marker=dict(size=6)
+        ))
+
+        fig_growth.add_trace(go.Scatter(
+            x=years,
+            y=paid,
+            mode='lines+markers',
+            name='Paid Students',
+            line=dict(color='rgba(220, 20, 60, 0.8)', width=3),  # soft red
+            marker=dict(size=6)
+        ))
+
+        fig_growth.update_layout(
+            title='Yearly Growth: Registrants and Paid Students',
+            xaxis_title='Year',
+            yaxis_title='Count',
+            template='simple_white',
+            legend=dict(orientation="h", y=1.1),
+            margin=dict(l=40, r=40, t=60, b=40)
+        )
+
+        growth_chart_html = pio.to_html(fig_growth, full_html=False)
 
     return render(request, 'dashboard.html', {
         'documents': documents,
@@ -170,6 +247,8 @@ def dashboard_view(request):
         'total_registrants': total_registrants,
         'student_paid': student_paid,
         'student_unpaid': student_unpaid,
+        'growth_chart_html': growth_chart_html,
+        'growth_data': growth_data,
     })
 
 

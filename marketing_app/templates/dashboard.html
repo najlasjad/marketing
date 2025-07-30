@@ -481,46 +481,10 @@
                 </div>
 
                 <div class="charts-container">
-                    <div class="chart-section">
-                        <div class="chart-title">Weekly Total Income & Cashback</div>
-                        <div class="line-chart-container">
-                            <div class="chart-grid"></div>
-                            <div class="line-path">
-                                <svg viewbox="0 0 560 240">
-                                    <path
-                                        class="chart-line"
-                                        d="M0,20 L80,60 L160,80 L240,140 L320,160 L400,40 L480,80 L560,200"/>
-                                </svg>
-                            </div>
-                            <div class="y-axis-label">Income</div>
-                        </div>
-                        <div class="x-axis-labels">
-                            <span>2023-03-12</span>
-                            <span>2023-03-19</span>
-                            <span>2023-03-26</span>
-                            <span>2023-04-02</span>
-                            <span>2023-04-09</span>
-                            <span>2023-04-16</span>
-                            <span>2023-04-23</span>
-                            <span>2023-04-30</span>
-                            <span>2023-05-07</span>
-                        </div>
-                        <div
-                            style="
-                              text-align: center;
-                              margin-top: 10px;
-                              font-size: 12px;
-                              color: #666;
-                            ">
-                            Week Start Date
-                        </div>
+                    <div class="my-6">
+                        {{ growth_chart_html|safe }}
                     </div>
 
-                    {% comment %} {% if payment_html %}
-                        <div class="mb-10" id="payment-viz-section">
-                            <div class="mpld3-figure">{{ payment_html|safe }}</div>
-                        </div>
-                    {% endif %} {% endcomment %}
                 </div>
             </div>
         </body>
