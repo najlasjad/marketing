@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Prototype</title>
+    <title>Dashboard Prototype - Responsive</title>
     <style>
         * {
             margin: 0;
@@ -31,15 +31,19 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .stats-container {
             display: flex;
             gap: 60px;
+            flex-wrap: wrap;
         }
 
         .stat-item {
             text-align: left;
+            min-width: 150px;
         }
 
         .stat-number {
@@ -58,6 +62,7 @@
 
         .year-selector {
             position: relative;
+            min-width: 120px;
         }
 
         .year-radio {
@@ -76,6 +81,7 @@
             min-width: 120px;
             position: relative;
             display: block;
+            width: 100%;
         }
 
         .dropdown-button::after {
@@ -163,10 +169,12 @@
             display: flex;
             gap: 40px;
             align-items: flex-start;
+            flex-wrap: wrap;
         }
 
         .chart-section {
             flex: 1;
+            min-width: 300px;
         }
 
         .chart-title {
@@ -181,6 +189,7 @@
             height: 300px;
             border: 1px solid #eee;
             background-color: #fafafa;
+            overflow: hidden;
         }
 
         .line-chart {
@@ -228,6 +237,13 @@
             font-size: 12px;
             color: #666;
             padding: 0 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .x-axis-labels span {
+            flex-shrink: 0;
+            margin-right: 10px;
         }
 
         .y-axis-label {
@@ -243,6 +259,7 @@
         .pie-chart-section {
             flex: 0 0 300px;
             text-align: center;
+            min-width: 250px;
         }
 
         .pie-chart-container {
@@ -250,6 +267,7 @@
             width: 250px;
             height: 250px;
             margin: 0 auto;
+            max-width: 100%;
         }
 
         .pie-chart svg {
@@ -293,6 +311,145 @@
 
         .legend-unpaid {
             background-color: #dc2626;
+        }
+
+        /* Tablet styles */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 30px;
+            }
+
+            .stats-container {
+                gap: 30px;
+                justify-content: space-around;
+            }
+
+            .stat-item {
+                text-align: center;
+                min-width: 120px;
+            }
+
+            .stat-number {
+                font-size: 36px;
+            }
+
+            .stat-label {
+                font-size: 16px;
+            }
+
+            .year-selector {
+                align-self: center;
+                min-width: 150px;
+            }
+
+            .charts-container {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .chart-section {
+                min-width: 100%;
+            }
+
+            .pie-chart-section {
+                flex: none;
+                min-width: 100%;
+            }
+
+            .x-axis-labels {
+                font-size: 10px;
+                gap: 5px;
+            }
+
+            .x-axis-labels span {
+                transform: rotate(-45deg);
+                transform-origin: left bottom;
+                margin-right: 20px;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+
+            .stat-item {
+                text-align: center;
+                width: 100%;
+            }
+
+            .stat-number {
+                font-size: 32px;
+            }
+
+            .stat-label {
+                font-size: 14px;
+            }
+
+            .line-chart-container {
+                height: 250px;
+            }
+
+            .pie-chart-container {
+                width: 200px;
+                height: 200px;
+            }
+
+            .x-axis-labels {
+                display: none; /* Hide labels on very small screens */
+            }
+
+            .dropdown-button {
+                font-size: 20px;
+                padding: 10px 35px 10px 15px;
+            }
+
+            .dropdown-item {
+                font-size: 20px;
+                padding: 10px 15px;
+            }
+
+            .chart-title {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+            .y-axis-label {
+                display: none; /* Hide y-axis label on mobile */
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 320px) {
+            .stat-number {
+                font-size: 28px;
+            }
+
+            .pie-chart-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .line-chart-container {
+                height: 200px;
+            }
         }
     </style>
 </head>
