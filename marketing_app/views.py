@@ -18,6 +18,11 @@ import plotly.io as pio
 import plotly.graph_objects as go
 
 
+from plotly.offline import plot
+from datetime import datetime, timedelta
+import json
+
+
 def start_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -51,8 +56,121 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
-    is_admin = request.user.is_superuser or request.user.is_staff
-    return render(request, 'dashboard.html', {'is_admin': is_admin})
+    documents = Document.objects.all().order_by('-uploaded_at')
+    selected_id = request.GET.get('doc')
+    payment_html = None
+
+    ump_mapping = {
+        0: 2725504,
+        11: 3166460,
+        12: 2522609,
+        13: 2512539,
+        14: 2938564,
+        15: 2698940,
+        16: 3144446,
+        17: 2238094,
+        18: 2440486,
+        19: 3264884,
+        21: 3050172,
+        31: 4641854,
+        32: 1841487,
+        33: 1812935,
+        34: 1840915,
+        35: 1891567,
+        36: 2501203,
+        51: 2516971,
+        52: 2207212,
+        53: 1975000,
+        61: 2434328,
+        62: 2922516,
+        63: 2906473,
+        64: 3014497,
+        65: 3016738,
+        71: 3310723,
+        72: 2390739,
+        73: 3165876,
+        74: 2576016,
+        75: 2800580,
+        76: 2678863,
+        81: 2619312,
+        82: 2862231,
+        91: 3200000,
+        94: 3561932,
+    }
+
+    if not selected_id and documents.exists():
+        selected_id = str(documents.first().id)
+
+    payment_html = None
+
+    if selected_id:
+        doc = get_object_or_404(Document, pk=selected_id)
+
+        try:
+            df = pd.read_csv(doc.file.path, delimiter=';',
+                             encoding='utf-8', low_memory=False)
+        except Exception:
+            df = pd.read_csv(doc.file.path)
+
+        df['ump'] = df['iddataprovinces'].map(
+            lambda x: ump_mapping.get(x, None))
+
+        expected_cols = [
+            'idregistrantdata', 'groupreg', 'regtype',
+            'iddataregkhusustype', 'idschooltypedata',
+            'idschooljurusandata', 'email', 'idmajordata',
+            'idcountrydata', 'iddataprovinces',
+            'iddataregencies', 'ispaid', 'paymentamount', 'ump'
+        ]
+
+        available_cols = [col for col in expected_cols if col in df.columns]
+        df = df[available_cols]
+
+        if 'email' in df.columns and 'ispaid' in df.columns:
+            df = df.sort_values(by='ispaid', ascending=False)
+            df = df.drop_duplicates(subset='email', keep='first')
+
+            total_registrants = len(df)
+
+            student_paid = df[df['ispaid'] ==
+                              1].shape[0] if 'ispaid' in df.columns else 0
+            student_unpaid = df[df['ispaid'] ==
+                                0].shape[0] if 'ispaid' in df.columns else 0
+
+            if 'ispaid' in df.columns:
+                payment_counts = df['ispaid'].value_counts().sort_index()
+                labels = ['Not Yet Paid', 'Payment Completed']
+                colors = ['rgb(165, 0, 38)', 'rgb(255, 160, 122)']
+
+                fig1 = go.Figure(
+                    data=[
+                        go.Pie(
+                            labels=labels,
+                            values=payment_counts,
+                            marker=dict(colors=colors),
+                            textinfo='percent+label',
+                            insidetextorientation='radial',
+                            textfont=dict(size=14, color='black')
+                        )
+                    ]
+                )
+
+                fig1.update_layout(
+                    title_text='Distribution of Students by Payment Status',
+                    title_font=dict(size=18, color='black'),
+                    showlegend=False
+                )
+
+                payment_html = pio.to_html(fig1, full_html=False)
+
+    return render(request, 'dashboard.html', {
+        'documents': documents,
+        'selected_id': selected_id,
+        'payment_html': payment_html,
+        'total_registrants': total_registrants,
+        'student_paid': student_paid,
+        'student_unpaid': student_unpaid,
+    })
 
 
 @login_required
