@@ -61,9 +61,17 @@ class Command(BaseCommand):
         self.stdout.write("Confusion Matrix:")
         self.stdout.write(str(confusion_matrix(y_test, y_pred)))
 
+        # Save model
         model_path = os.path.join('xgb_model.pkl')
         with open(model_path, "wb") as f:
             pickle.dump(xgb, f)
 
+        # Save training feature columns
+        feature_cols_path = os.path.join('xgb_model_features.pkl')
+        with open(feature_cols_path, "wb") as f:
+            pickle.dump(X.columns.tolist(), f)
+
         self.stdout.write(self.style.SUCCESS(
             f"\n✅ Model saved to {model_path}"))
+        self.stdout.write(self.style.SUCCESS(
+            f"✅ Feature structure saved to {feature_cols_path}"))

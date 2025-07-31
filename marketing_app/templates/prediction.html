@@ -1,10 +1,17 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} {% load humanize %} {% block content %}
 <!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Student Payment Predictor</title>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <style>
       .container {
         background: white;
@@ -233,104 +240,70 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="header">
-        <div class="graduation-icon">🎓</div>
-        <h1 class="title">Student Payment Predictor</h1>
-        <p class="subtitle">
-          Predict 2023 payment status using 2022 training data
-        </p>
-      </div>
+    <div class="container mx-auto max-w-xl bg-white rounded-2xl shadow p-6 mt-6">
+      <h1 class="text-2xl font-bold text-center mb-4">Student Payment Predictor</h1>
+      <p class="text-center text-gray-500 mb-6">Predict 2023 payment status using 2022 training data</p>
 
-      <div class="section">
-        <h2 class="section-title">
-          <span class="section-icon">🏫</span>
-          Select Student (2023):
-        </h2>
-        <div class="select-wrapper">
-          <select class="select">
-            <option>REG2023001</option>
+      <form method="post">
+        {% csrf_token %}
+        <label for="idregistrantdata" class="block font-semibold mb-2">Select Student ID:</label>
+          <select name="idregistrantdata" id="idregistrantdata" onchange="this.form.submit()" class="select2 w-full p-3 border border-gray-300 rounded-lg mb-4">
+            <option value="">-- Choose ID --</option>
+            {% for student in student_options %}
+              <option value="{{ student.idregistrantdata }}" {% if student.idregistrantdata == selected_idregistrantdata %}selected{% endif %}>
+                {{ student.idregistrantdata }} - {{ student.email }}
+              </option>
+            {% endfor %}
           </select>
-          <span class="select-arrow">▼</span>
-        </div>
-      </div>
 
-      <div class="section">
-        <h2 class="section-title">Student Information</h2>
-        <div class="info-row">
-          <span class="info-label">Registration ID:</span>
-          <span class="info-value">REG2023001</span>
-        </div>
-        <div class="email">
-          <span class="email-icon">✉</span>
-          <span class="email-text">budi.santoso@email.com</span>
-        </div>
-      </div>
 
-      <div class="section">
-        <h2 class="section-title">Academic Background</h2>
-        <div class="info-row">
-          <span class="info-label">School Type:</span>
-          <span class="info-value">SMA</span>
+        {% if selected_student_data %}
+        <div class="bg-gray-50 border rounded-lg p-4 mb-4">
+          <h2 class="text-lg font-semibold mb-2">Student Information</h2>
+          <p><strong>ID:</strong> {{ selected_student_data.idregistrantdata }}</p>
+          <p><strong>Email:</strong> {{ selected_student_data.email }}</p>
+          <p><strong>Group:</strong> {{ selected_student_data.groupreg }}</p>
+          <p><strong>Reg Type:</strong> {{ selected_student_data.regtype }}</p>
+          <p><strong>School Type:</strong> {{ selected_student_data.idschooltypedata }}</p>
+          <p><strong>Major:</strong> {{ selected_student_data.idmajordata }}</p>
+          <p><strong>Province:</strong> {{ selected_student_data.iddataprovinces }}</p>
+          <p><strong>Payment Amount:</strong> Rp {{ selected_student_data.paymentamount|floatformat:0|intcomma }}</p>
         </div>
-        <div class="info-row">
-          <span class="info-label">School Major:</span>
-          <span class="info-value"
-            >IPA <span class="claude-tag">Claude content</span></span
-          >
-        </div>
-        <div class="info-row">
-          <span class="info-label">Target Major:</span>
-          <span class="info-value">Computer Science</span>
-        </div>
-      </div>
+        {% endif %}
 
-      <div class="section">
-        <h2 class="section-title">
-          <span class="section-icon">📍</span>
-          Location & Economic Data
-        </h2>
-        <div class="info-row">
-          <span class="info-label">Province:</span>
-          <span class="info-value">Jawa Barat</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Regency:</span>
-          <span class="info-value">Bekasi</span>
-        </div>
-      </div>
+        <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-4 rounded-lg my-4">
+          💲 Predict Payment Status
+        </button>
+      </form>
 
-      <div class="financial-data">
-        <div class="financial-row">
-          <span class="financial-label">UMP 2023:</span>
-          <span class="financial-value ump-value">Rp 4.956.961</span>
-        </div>
-        <div class="financial-row">
-          <span class="financial-label">Payment Amount:</span>
-          <span class="financial-value payment-value">Rp 15.000.000</span>
-        </div>
-        <div class="financial-row">
-          <span class="financial-label">Payment/UMP Ratio:</span>
-          <span class="financial-value ratio-value">3.03x</span>
-        </div>
+      {% if prediction_results %}
+      <div class="bg-white border border-blue-200 rounded-lg p-4 mt-4">
+        <h2 class="text-lg font-bold mb-2">Prediction Result</h2>
+        {% if prediction_results.error %}
+          <p class="text-red-500">{{ prediction_results.error }}</p>
+        {% else %}
+          <p><strong>Status:</strong> {{ prediction_results.status }}</p>
+          <p><strong>Probability Paid:</strong> {{ prediction_results.probability_paid }}%</p>
+          <p><strong>Probability Not Paid:</strong> {{ prediction_results.probability_unpaid }}%</p>
+        {% endif %}
       </div>
-
-      <button class="predict-button">
-        <span class="predict-icon">💲</span>
-        Predict Payment Status
-      </button>
-
-      <div class="footer">
-        <div class="footer-row">
-          <span class="footer-icon">🤖</span>
-          <span>Model trained on 2022 registration data</span>
-        </div>
-        <div class="footer-row">
-          <span class="footer-icon">📊</span>
-          <span>Factors: UMP ratio, school type, target major</span>
-        </div>
-      </div>
+      {% endif %}
     </div>
   </body>
+
+  <script>
+    $(document).ready(function() {
+      $('.select2').select2({
+        placeholder: "Cari ID atau email...",
+        allowClear: true,
+        width: '100%'
+      });
+    });
+
+    $("form").on("submit", function() {
+      $("button[type='submit']").text("Processing...").prop("disabled", true);
+    });
+  </script>
+
 </html>
 {% endblock %}

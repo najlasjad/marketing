@@ -8,19 +8,16 @@ from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse
-
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
-
-
-from plotly.offline import plot
-from datetime import datetime, timedelta
 import json
+import joblib
+from django.conf import settings
+from sklearn.preprocessing import LabelEncoder
+import os
 
 
 def start_view(request):
@@ -331,7 +328,132 @@ def delete_dataset(request, id):
 @login_required
 def prediction_view(request):
     is_admin = request.user.is_superuser or request.user.is_staff
-    return render(request, 'prediction.html', {'is_admin': is_admin})
+    documents = Document.objects.all().order_by('-uploaded_at')
+    test_doc = documents.filter(name__icontains='2023').first()
+
+    prediction_results = None
+    selected_idregistrantdata = request.POST.get(
+        'idregistrantdata') if request.method == 'POST' else None
+    selected_student_data = None
+    student_options = []
+    test_df = None
+
+    selected_columns = [
+        'idregistrantdata',
+        'groupreg',
+        'regtype',
+        'iddataregkhusustype',
+        'idschooltypedata',
+        'idschooljurusandata',
+        'email',
+        'idmajordata',
+        'idcountrydata',
+        'iddataprovinces',
+        'iddataregencies',
+        'paymentamount',
+        'ispaid',
+    ]
+
+    ump_mapping = {
+        0: 2725504, 11: 3166460, 12: 2522609, 13: 2512539, 14: 2938564, 15: 2698940,
+        16: 3144446, 17: 2238094, 18: 2440486, 19: 3264884, 21: 3050172, 31: 4641854,
+        32: 1841487, 33: 1812935, 34: 1840915, 35: 1891567, 36: 2501203, 51: 2516971,
+        52: 2207212, 53: 1975000, 61: 2434328, 62: 2922516, 63: 2906473, 64: 3014497,
+        65: 3016738, 71: 3310723, 72: 2390739, 73: 3165876, 74: 2576016, 75: 2800580,
+        76: 2678863, 81: 2619312, 82: 2862231, 91: 3200000, 94: 3561932,
+    }
+
+    if test_doc:
+        try:
+            test_df = pd.read_csv(test_doc.file.path,
+                                  delimiter=';', encoding='utf-8')
+        except Exception:
+            test_df = pd.read_csv(test_doc.file.path)
+
+        if 'idregistrantdata' in test_df.columns:
+            test_df = test_df.dropna(subset=['idregistrantdata'])
+            test_df = test_df.drop_duplicates(
+                subset='idregistrantdata', keep='first')
+            if 'email' not in test_df.columns:
+                test_df['email'] = ''
+            test_df = test_df[selected_columns]
+            student_options = test_df[[
+                'idregistrantdata', 'email']].to_dict('records')
+
+    if selected_idregistrantdata and test_df is not None:
+        student_row = test_df[test_df['idregistrantdata'].astype(
+            str) == str(selected_idregistrantdata)]
+
+        if not student_row.empty:
+            selected_student_data = student_row.iloc[0].to_dict()
+
+            # Mapping UMP
+            student_row['ump'] = student_row['iddataprovinces'].map(
+                ump_mapping)
+            selected_student_data['ump'] = int(student_row['ump'].values[0]) if not pd.isna(
+                student_row['ump'].values[0]) else None
+
+            if request.method == 'POST':
+                model_path = os.path.join(settings.BASE_DIR, 'xgb_model.pkl')
+                feature_path = os.path.join(
+                    settings.BASE_DIR, 'xgb_model_features.pkl')
+
+                if os.path.exists(model_path) and os.path.exists(feature_path):
+                    model = joblib.load(model_path)
+                    model_features = joblib.load(feature_path)
+
+                    feature_cols = [
+                        'groupreg', 'regtype', 'iddataregkhusustype',
+                        'idschooltypedata', 'idschooljurusandata',
+                        'idmajordata', 'idcountrydata', 'iddataprovinces',
+                        'iddataregencies', 'paymentamount', 'ump'
+                    ]
+
+                    try:
+                        df_pred = student_row.copy()
+                        df_pred = df_pred[feature_cols]
+
+                        # Encoding
+                        categorical_cols = [col for col in df_pred.columns if df_pred[col].nunique(
+                        ) < 15 and df_pred[col].dtype in ['int64', 'object']]
+                        ordinal_cols = [
+                            col for col in categorical_cols if df_pred[col].dtype != 'object']
+                        nominal_cols = [
+                            col for col in categorical_cols if df_pred[col].dtype == 'object']
+
+                        for col in ordinal_cols:
+                            le = LabelEncoder()
+                            df_pred[col] = le.fit_transform(df_pred[col])
+
+                        df_pred = pd.get_dummies(df_pred, columns=nominal_cols)
+
+                        # ✅ Align to model's expected columns
+                        df_pred = df_pred.reindex(
+                            columns=model_features, fill_value=0)
+
+                        prediction = model.predict(df_pred)[0]
+                        proba = model.predict_proba(df_pred)[0]
+
+                        prediction_results = {
+                            'status': 'Paid' if prediction == 1 else 'Not Paid',
+                            'probability_paid': round(proba[1] * 100, 2),
+                            'probability_unpaid': round(proba[0] * 100, 2),
+                        }
+                    except Exception as e:
+                        prediction_results = {
+                            'error': f'Prediction error: {str(e)}'
+                        }
+                else:
+                    prediction_results = {
+                        'error': 'Model or feature structure file not found.'}
+
+    return render(request, 'prediction.html', {
+        'is_admin': is_admin,
+        'student_options': student_options,
+        'prediction_results': prediction_results,
+        'selected_student_data': selected_student_data,
+        'selected_idregistrantdata': selected_idregistrantdata
+    })
 
 
 @login_required
