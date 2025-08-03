@@ -335,130 +335,107 @@ def delete_dataset(request, id):
 def prediction_view(request):
     is_admin = request.user.is_superuser or request.user.is_staff
     documents = Document.objects.all().order_by('-uploaded_at')
-    test_doc = documents.filter(name__icontains='2023').first()
 
-    prediction_results = None
-    selected_idregistrantdata = request.POST.get(
-        'idregistrantdata') if request.method == 'POST' else None
-    selected_student_data = None
-    student_options = []
-    test_df = None
+    training_file_id = request.POST.get('training_file_id')
+    testing_file_id = request.POST.get('testing_file_id')
 
-    selected_columns = [
-        'idregistrantdata',
-        'groupreg',
-        'regtype',
-        'iddataregkhusustype',
-        'idschooltypedata',
-        'idschooljurusandata',
-        'email',
-        'idmajordata',
-        'idcountrydata',
-        'iddataprovinces',
-        'iddataregencies',
-        'paymentamount',
-        'ispaid',
-    ]
+    training_df = None
+    testing_df = None
+    predictions_paid = []
+    predictions_unpaid = []
 
-    ump_mapping = {
-        0: 2725504, 11: 3166460, 12: 2522609, 13: 2512539, 14: 2938564, 15: 2698940,
-        16: 3144446, 17: 2238094, 18: 2440486, 19: 3264884, 21: 3050172, 31: 4641854,
-        32: 1841487, 33: 1812935, 34: 1840915, 35: 1891567, 36: 2501203, 51: 2516971,
-        52: 2207212, 53: 1975000, 61: 2434328, 62: 2922516, 63: 2906473, 64: 3014497,
-        65: 3016738, 71: 3310723, 72: 2390739, 73: 3165876, 74: 2576016, 75: 2800580,
-        76: 2678863, 81: 2619312, 82: 2862231, 91: 3200000, 94: 3561932,
-    }
-
-    if test_doc:
+    if training_file_id and testing_file_id:
         try:
-            test_df = pd.read_csv(test_doc.file.path,
-                                  delimiter=';', encoding='utf-8')
-        except Exception:
-            test_df = pd.read_csv(test_doc.file.path)
+            # Ambil path file
+            train_doc = Document.objects.get(id=training_file_id)
+            test_doc = Document.objects.get(id=testing_file_id)
 
-        if 'idregistrantdata' in test_df.columns:
-            test_df = test_df.dropna(subset=['idregistrantdata'])
-            test_df = test_df.drop_duplicates(
-                subset='idregistrantdata', keep='first')
-            if 'email' not in test_df.columns:
-                test_df['email'] = ''
-            test_df = test_df[selected_columns]
-            student_options = test_df[[
-                'idregistrantdata', 'email']].to_dict('records')
+            # Load CSV
+            training_df = pd.read_csv(
+                train_doc.file.path, delimiter=';', encoding='utf-8')
+            testing_df = pd.read_csv(
+                test_doc.file.path, delimiter=';', encoding='utf-8')
+        except Exception as e:
+            return render(request, 'prediction.html', {
+                'error': f'Gagal memuat file: {str(e)}',
+                'documents': documents,
+                'is_admin': is_admin
+            })
 
-    if selected_idregistrantdata and test_df is not None:
-        student_row = test_df[test_df['idregistrantdata'].astype(
-            str) == str(selected_idregistrantdata)]
+        # Kolom penting
+        feature_cols = [
+            'groupreg', 'regtype', 'iddataregkhusustype',
+            'idschooltypedata', 'idschooljurusandata',
+            'idmajordata', 'idcountrydata', 'iddataprovinces',
+            'iddataregencies', 'paymentamount', 'ump'
+        ]
 
-        if not student_row.empty:
-            selected_student_data = student_row.iloc[0].to_dict()
+        ump_mapping = {
+            0: 2725504, 11: 3166460, 12: 2522609, 13: 2512539, 14: 2938564, 15: 2698940,
+            16: 3144446, 17: 2238094, 18: 2440486, 19: 3264884, 21: 3050172, 31: 4641854,
+            32: 1841487, 33: 1812935, 34: 1840915, 35: 1891567, 36: 2501203, 51: 2516971,
+            52: 2207212, 53: 1975000, 61: 2434328, 62: 2922516, 63: 2906473, 64: 3014497,
+            65: 3016738, 71: 3310723, 72: 2390739, 73: 3165876, 74: 2576016, 75: 2800580,
+            76: 2678863, 81: 2619312, 82: 2862231, 91: 3200000, 94: 3561932,
+        }
 
-            # Mapping UMP
-            student_row['ump'] = student_row['iddataprovinces'].map(
-                ump_mapping)
-            selected_student_data['ump'] = int(student_row['ump'].values[0]) if not pd.isna(
-                student_row['ump'].values[0]) else None
+        try:
+            # Tambahkan kolom 'ump'
+            testing_df['ump'] = testing_df['iddataprovinces'].map(ump_mapping)
 
-            if request.method == 'POST':
-                model_path = os.path.join(settings.BASE_DIR, 'xgb_model.pkl')
-                feature_path = os.path.join(
-                    settings.BASE_DIR, 'xgb_model_features.pkl')
+            # Load model & fitur
+            model_path = os.path.join(settings.BASE_DIR, 'xgb_model.pkl')
+            feature_path = os.path.join(
+                settings.BASE_DIR, 'xgb_model_features.pkl')
+            model = joblib.load(model_path)
+            model_features = joblib.load(feature_path)
 
-                if os.path.exists(model_path) and os.path.exists(feature_path):
-                    model = joblib.load(model_path)
-                    model_features = joblib.load(feature_path)
+            df_pred = testing_df.copy()
+            df_pred = df_pred[feature_cols]
 
-                    feature_cols = [
-                        'groupreg', 'regtype', 'iddataregkhusustype',
-                        'idschooltypedata', 'idschooljurusandata',
-                        'idmajordata', 'idcountrydata', 'iddataprovinces',
-                        'iddataregencies', 'paymentamount', 'ump'
-                    ]
+            # Encoding
+            categorical_cols = [col for col in df_pred.columns if df_pred[col].nunique(
+            ) < 15 and df_pred[col].dtype in ['int64', 'object']]
+            ordinal_cols = [
+                col for col in categorical_cols if df_pred[col].dtype != 'object']
+            nominal_cols = [
+                col for col in categorical_cols if df_pred[col].dtype == 'object']
 
-                    try:
-                        df_pred = student_row.copy()
-                        df_pred = df_pred[feature_cols]
+            for col in ordinal_cols:
+                le = LabelEncoder()
+                df_pred[col] = le.fit_transform(df_pred[col])
 
-                        # Encoding
-                        categorical_cols = [col for col in df_pred.columns if df_pred[col].nunique(
-                        ) < 15 and df_pred[col].dtype in ['int64', 'object']]
-                        ordinal_cols = [
-                            col for col in categorical_cols if df_pred[col].dtype != 'object']
-                        nominal_cols = [
-                            col for col in categorical_cols if df_pred[col].dtype == 'object']
+            df_pred = pd.get_dummies(df_pred, columns=nominal_cols)
+            df_pred = df_pred.reindex(columns=model_features, fill_value=0)
 
-                        for col in ordinal_cols:
-                            le = LabelEncoder()
-                            df_pred[col] = le.fit_transform(df_pred[col])
+            # Predict
+            predictions = model.predict(df_pred)
+            probabilities = model.predict_proba(df_pred)
 
-                        df_pred = pd.get_dummies(df_pred, columns=nominal_cols)
+            testing_df['predicted'] = predictions
+            testing_df['proba_paid'] = probabilities[:, 1]
+            testing_df['proba_unpaid'] = probabilities[:, 0]
 
-                        # ✅ Align to model's expected columns
-                        df_pred = df_pred.reindex(
-                            columns=model_features, fill_value=0)
+            # Bagi berdasarkan prediksi
+            predictions_paid = testing_df[testing_df['predicted'] == 1].to_dict(
+                'records')
+            predictions_unpaid = testing_df[testing_df['predicted'] == 0].to_dict(
+                'records')
 
-                        prediction = model.predict(df_pred)[0]
-                        proba = model.predict_proba(df_pred)[0]
-
-                        prediction_results = {
-                            'status': 'Paid' if prediction == 1 else 'Not Paid',
-                            'probability_paid': round(proba[1] * 100, 2),
-                            'probability_unpaid': round(proba[0] * 100, 2),
-                        }
-                    except Exception as e:
-                        prediction_results = {
-                            'error': f'Prediction error: {str(e)}'
-                        }
-                else:
-                    prediction_results = {
-                        'error': 'Model or feature structure file not found.'}
+        except Exception as e:
+            return render(request, 'prediction.html', {
+                'error': f'Error saat prediksi: {str(e)}',
+                'documents': documents,
+                'is_admin': is_admin
+            })
 
     return render(request, 'prediction.html', {
         'is_admin': is_admin,
-        'student_options': student_options,
-        'prediction_results': prediction_results,
-        'selected_student_data': selected_student_data,
-        'selected_idregistrantdata': selected_idregistrantdata
+        'documents': documents,
+        'selected_train': training_file_id,
+        'selected_test': testing_file_id,
+        'predictions_paid': predictions_paid,
+        'predictions_unpaid': predictions_unpaid
     })
 
 

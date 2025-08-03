@@ -246,55 +246,63 @@
 
       <form method="post">
         {% csrf_token %}
-        <label for="idregistrantdata" class="block font-semibold mb-2">Select Student ID:</label>
-          <select name="idregistrantdata" id="idregistrantdata" onchange="this.form.submit()" class="select2 w-full p-3 border border-gray-300 rounded-lg mb-4">
-            <option value="">-- Choose ID --</option>
-            {% for student in student_options %}
-              <option value="{{ student.idregistrantdata }}" {% if student.idregistrantdata == selected_idregistrantdata %}selected{% endif %}>
-                {{ student.idregistrantdata }} - {{ student.email }}
+        <label for="training_file_id" class="block font-semibold mb-2">Select Training Data:</label>
+          <select name="training_file_id" id="training_file_id" onchange="this.form.submit()" class="select2 w-full p-3 border border-gray-300 rounded-lg mb-4">
+            <option value="">-- Choose Training Data --</option>
+            {% for doc in documents %}
+              <option value="{{ doc.id }}" {% if doc.id|stringformat:"s" == selected_train %}selected{% endif %}>
+                {{ doc.name }}
               </option>
             {% endfor %}
           </select>
 
-
-        {% if selected_student_data %}
-        <div class="bg-gray-50 border rounded-lg p-4 mb-4">
-          <h2 class="text-lg font-semibold mb-2">Student Information</h2>
-          <p><strong>ID:</strong> {{ selected_student_data.idregistrantdata }}</p>
-          <p><strong>Email:</strong> {{ selected_student_data.email }}</p>
-          <p><strong>Group:</strong> {{ selected_student_data.groupreg }}</p>
-          <p><strong>Reg Type:</strong> {{ selected_student_data.regtype }}</p>
-          <p><strong>School Type:</strong> {{ selected_student_data.idschooltypedata }}</p>
-          <p><strong>Major:</strong> {{ selected_student_data.idmajordata }}</p>
-          <p><strong>Province:</strong> {{ selected_student_data.iddataprovinces }}</p>
-          <p><strong>Payment Amount:</strong> Rp {{ selected_student_data.paymentamount|floatformat:0|intcomma }}</p>
-        </div>
-        {% endif %}
+          <label for="testing_file_id" class="block font-semibold mb-2">Select Testing Data:</label>
+          <select name="testing_file_id" id="testing_file_id" onchange="this.form.submit()" class="select2 w-full p-3 border border-gray-300 rounded-lg mb-4">
+            <option value="">-- Choose Testing Data --</option>
+            {% for doc in documents %}
+              <option value="{{ doc.id }}" {% if doc.id|stringformat:"s" == selected_test %}selected{% endif %}>
+                {{ doc.name }}
+              </option>
+            {% endfor %}
+          </select>
 
         <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-4 rounded-lg my-4">
           💲 Predict Payment Status
         </button>
       </form>
 
-      {% if prediction_results %}
-      <div class="bg-white border border-blue-200 rounded-lg p-4 mt-4">
-        <h2 class="text-lg font-bold mb-2">Prediction Result</h2>
-        {% if prediction_results.error %}
-          <p class="text-red-500">{{ prediction_results.error }}</p>
-        {% else %}
-          <p><strong>Status:</strong> {{ prediction_results.status }}</p>
-          <p><strong>Probability Paid:</strong> {{ prediction_results.probability_paid }}%</p>
-          <p><strong>Probability Not Paid:</strong> {{ prediction_results.probability_unpaid }}%</p>
-        {% endif %}
+      <hr>
+
+      <div style="display: flex; gap: 40px;">
+        <div style="flex: 1;">
+          <h3 style="color: red;">❌ Unpaid Predictions</h3>
+          <ul>
+            {% for row in predictions_unpaid %}
+              <li>ID: {{ row.idregistrantdata }} | Prob: {{ row.proba_unpaid|floatformat:2 }}%</li>
+            {% empty %}
+              <li>No unpaid predictions.</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div style="flex: 1;">
+          <h3 style="color: green;">✅ Paid Predictions</h3>
+          <ul>
+            {% for row in predictions_paid %}
+              <li>ID: {{ row.idregistrantdata }} | Prob: {{ row.proba_paid|floatformat:2 }}%</li>
+            {% empty %}
+              <li>No paid predictions.</li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
-      {% endif %}
     </div>
   </body>
 
   <script>
     $(document).ready(function() {
       $('.select2').select2({
-        placeholder: "Cari ID atau email...",
+        placeholder: "Select Data",
         allowClear: true,
         width: '100%'
       });
