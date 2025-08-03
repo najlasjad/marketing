@@ -18,6 +18,7 @@ import joblib
 from django.conf import settings
 from sklearn.preprocessing import LabelEncoder
 import os
+import geopandas as gpd
 
 
 def start_view(request):
@@ -58,48 +59,20 @@ def dashboard_view(request):
     payment_html = None
 
     ump_mapping = {
-        0: 2725504,
-        11: 3166460,
-        12: 2522609,
-        13: 2512539,
-        14: 2938564,
-        15: 2698940,
-        16: 3144446,
-        17: 2238094,
-        18: 2440486,
-        19: 3264884,
-        21: 3050172,
-        31: 4641854,
-        32: 1841487,
-        33: 1812935,
-        34: 1840915,
-        35: 1891567,
-        36: 2501203,
-        51: 2516971,
-        52: 2207212,
-        53: 1975000,
-        61: 2434328,
-        62: 2922516,
-        63: 2906473,
-        64: 3014497,
-        65: 3016738,
-        71: 3310723,
-        72: 2390739,
-        73: 3165876,
-        74: 2576016,
-        75: 2800580,
-        76: 2678863,
-        81: 2619312,
-        82: 2862231,
-        91: 3200000,
-        94: 3561932,
+        0: 2725504, 11: 3166460, 12: 2522609, 13: 2512539, 14: 2938564,
+        15: 2698940, 16: 3144446, 17: 2238094, 18: 2440486, 19: 3264884,
+        21: 3050172, 31: 4641854, 32: 1841487, 33: 1812935, 34: 1840915,
+        35: 1891567, 36: 2501203, 51: 2516971, 52: 2207212, 53: 1975000,
+        61: 2434328, 62: 2922516, 63: 2906473, 64: 3014497, 65: 3016738,
+        71: 3310723, 72: 2390739, 73: 3165876, 74: 2576016, 75: 2800580,
+        76: 2678863, 81: 2619312, 82: 2862231, 91: 3200000, 94: 3561932,
     }
 
     if not selected_id and documents.exists():
         selected_id = str(documents.first().id)
 
-    # Inisialisasi
     payment_html = None
+    map_html = None
     total_registrants = 0
     student_paid = 0
     student_unpaid = 0
@@ -120,11 +93,10 @@ def dashboard_view(request):
             lambda x: ump_mapping.get(x, None))
 
         expected_cols = [
-            'idregistrantdata', 'groupreg', 'regtype',
-            'iddataregkhusustype', 'idschooltypedata',
-            'idschooljurusandata', 'email', 'idmajordata',
-            'idcountrydata', 'iddataprovinces',
-            'iddataregencies', 'ispaid', 'paymentamount', 'ump'
+            'idregistrantdata', 'groupreg', 'regtype', 'iddataregkhusustype',
+            'idschooltypedata', 'idschooljurusandata', 'email', 'idmajordata',
+            'idcountrydata', 'iddataprovinces', 'iddataregencies',
+            'ispaid', 'paymentamount', 'ump'
         ]
         available_cols = [col for col in expected_cols if col in df.columns]
         df = df[available_cols]
@@ -142,16 +114,14 @@ def dashboard_view(request):
             colors = ['rgb(165, 0, 38)', 'rgb(255, 160, 122)']
 
             fig1 = go.Figure(
-                data=[
-                    go.Pie(
-                        labels=labels,
-                        values=payment_counts,
-                        marker=dict(colors=colors),
-                        textinfo='percent+label',
-                        insidetextorientation='radial',
-                        textfont=dict(size=14, color='black')
-                    )
-                ]
+                data=[go.Pie(
+                    labels=labels,
+                    values=payment_counts,
+                    marker=dict(colors=colors),
+                    textinfo='percent+label',
+                    insidetextorientation='radial',
+                    textfont=dict(size=14, color='black')
+                )]
             )
 
             fig1.update_layout(
@@ -162,9 +132,47 @@ def dashboard_view(request):
 
             payment_html = pio.to_html(fig1, full_html=False)
 
-    # Statistik pertumbuhan dari semua dokumen
-    yearly_stats = {}
+            # ----------------------------
+            # 🗺️ PETA PROVINSI DENGAN GEOPANDAS
+            # ----------------------------
+            province_counts = df['iddataprovinces'].value_counts().to_dict()
 
+            geo_path = os.path.join(
+                settings.BASE_DIR, 'marketing_app', 'static', 'geo', 'indonesia_provinces.geojson')
+            print(f"[DEBUG] GeoJSON path: {geo_path}")
+            print(f"[EXISTS?] {os.path.exists(geo_path)}")
+
+            gdf = gpd.read_file(geo_path)
+
+            # GUNAKAN CC_1 SEBAGAI ID PROVINSI
+            gdf['prov_id'] = gdf['CC_1'].astype(int)
+            gdf['registrants'] = gdf['prov_id'].map(
+                province_counts).fillna(0).astype(int)
+
+            fig_map = px.choropleth_mapbox(
+                gdf,
+                geojson=json.loads(gdf.to_json()),
+                locations=gdf.index,
+                color="registrants",
+                color_continuous_scale="YlOrRd",
+                mapbox_style="carto-positron",
+                center={"lat": -2.5, "lon": 118},
+                zoom=4.2,
+                hover_name="NAME_1",
+                hover_data={"registrants": True},
+                opacity=0.6
+            )
+
+            fig_map.update_layout(
+                margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                height=600,
+                width=1000
+            )
+
+            map_html = pio.to_html(fig_map, full_html=False)
+
+    # Statistik pertumbuhan
+    yearly_stats = {}
     for doc in documents:
         try:
             df = pd.read_csv(doc.file.path, delimiter=';',
@@ -185,7 +193,6 @@ def dashboard_view(request):
 
     sorted_years = sorted(yearly_stats.keys())
 
-    # Hitung pertumbuhan persen
     for i in range(1, len(sorted_years)):
         prev = yearly_stats[sorted_years[i - 1]]
         curr = yearly_stats[sorted_years[i]]
@@ -200,20 +207,18 @@ def dashboard_view(request):
             "paid_growth": round(paid_growth, 2)
         })
 
-    # Grafik pertumbuhan pendaftar & pembayaran
     if yearly_stats:
         years = sorted_years
         registrants = [yearly_stats[y]['registrants'] for y in years]
         paid = [yearly_stats[y]['paid'] for y in years]
 
         fig_growth = go.Figure()
-
         fig_growth.add_trace(go.Scatter(
             x=years,
             y=registrants,
             mode='lines+markers',
             name='Total Registrants',
-            line=dict(color='rgba(100, 149, 237, 0.8)', width=3),  # soft blue
+            line=dict(color='rgba(100, 149, 237, 0.8)', width=3),
             marker=dict(size=6)
         ))
 
@@ -222,7 +227,7 @@ def dashboard_view(request):
             y=paid,
             mode='lines+markers',
             name='Paid Students',
-            line=dict(color='rgba(220, 20, 60, 0.8)', width=3),  # soft red
+            line=dict(color='rgba(220, 20, 60, 0.8)', width=3),
             marker=dict(size=6)
         ))
 
@@ -241,6 +246,7 @@ def dashboard_view(request):
         'documents': documents,
         'selected_id': selected_id,
         'payment_html': payment_html,
+        'map_html': map_html,
         'total_registrants': total_registrants,
         'student_paid': student_paid,
         'student_unpaid': student_unpaid,
@@ -465,6 +471,7 @@ def visualization_view(request):
     province_html = None
     payment_html = None
     ump_html = None
+    map_html = None
 
     regtype_mapping = {
         0: "Unknown",
@@ -836,6 +843,45 @@ def visualization_view(request):
 
                 ump_html = pio.to_html(fig, full_html=False)
 
+            # ----------------------------
+            # 🗺️ PETA PROVINSI DENGAN GEOPANDAS
+            # ----------------------------
+            province_counts = df['iddataprovinces'].value_counts().to_dict()
+
+            geo_path = os.path.join(
+                settings.BASE_DIR, 'marketing_app', 'static', 'geo', 'indonesia_provinces.geojson')
+            print(f"[DEBUG] GeoJSON path: {geo_path}")
+            print(f"[EXISTS?] {os.path.exists(geo_path)}")
+
+            gdf = gpd.read_file(geo_path)
+
+            # GUNAKAN CC_1 SEBAGAI ID PROVINSI
+            gdf['prov_id'] = gdf['CC_1'].astype(int)
+            gdf['registrants'] = gdf['prov_id'].map(
+                province_counts).fillna(0).astype(int)
+
+            fig_map = px.choropleth_mapbox(
+                gdf,
+                geojson=json.loads(gdf.to_json()),
+                locations=gdf.index,
+                color="registrants",
+                color_continuous_scale="YlOrRd",
+                mapbox_style="carto-positron",
+                center={"lat": -2.5, "lon": 118},
+                zoom=4.2,
+                hover_name="NAME_1",
+                hover_data={"registrants": True},
+                opacity=0.6
+            )
+
+            fig_map.update_layout(
+                margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                height=600,
+                width=1000
+            )
+
+            map_html = pio.to_html(fig_map, full_html=False)
+
     return render(request, 'visualization.html', {
         'documents': documents,
         'selected_id': selected_id,
@@ -845,4 +891,5 @@ def visualization_view(request):
         'province_html': province_html,
         'payment_html': payment_html,
         'ump_html': ump_html,
+        'map_html': map_html
     })

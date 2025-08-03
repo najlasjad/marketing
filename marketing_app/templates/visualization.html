@@ -138,6 +138,12 @@
         </div>
     {% endif %}
 
+    {% if map_html %}
+        <div class="mb-10" id="ump-viz-section">
+            <div class="mpld3-figure">{{ map_html|safe }}</div>
+        </div>
+    {% endif %}
+
     {% if not selected_id %}
         <div class="empty-state" id="empty-state">
             <div class="empty-state-icon">📊</div>

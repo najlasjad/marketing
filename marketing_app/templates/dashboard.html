@@ -484,9 +484,17 @@
                     <div class="my-6">
                         {{ growth_chart_html|safe }}
                     </div>
+                </div>
 
+                <div class="charts-container" style="display: flex; flex-direction: column;">
+                    <h1 style="margin-bottom: 10px; font-size: 50px">🗺️ Student Distribution Map per Province</h1>
+                    <div class="chart" style="width: 100%; max-width: 1000px; margin: auto;">
+                        {{ map_html|safe }}
+                    </div>
                 </div>
             </div>
+
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         </body>
     </html>
 
